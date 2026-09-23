@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#07101d">
+<meta name="referrer" content="no-referrer">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Newline Remote</title>
+<style>
+:root{color-scheme:dark;--bg:#07101d;--card:#0c1a2c;--line:#2c527d;--blue:#62adff;--text:#f4f8ff;--muted:#9fb3ca;--red:#ff7181;--green:#55dca3}
+*{box-sizing:border-box}html,body{min-height:100%}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -10%,#173c66 0,#07101d 42%,#050a11 100%);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);padding:max(20px,env(safe-area-inset-top)) 18px max(24px,env(safe-area-inset-bottom));-webkit-tap-highlight-color:transparent}
+.wrap{max-width:520px;margin:auto}.top{display:flex;align-items:center;justify-content:space-between;margin:3px 2px 20px}.title{font-size:28px;font-weight:850;letter-spacing:-.035em}.sub{font-size:12px;color:var(--muted);margin-top:3px}.status{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted)}.dot{width:11px;height:11px;border-radius:50%;background:#657386}.dot.on{background:var(--green);box-shadow:0 0 15px #55dca388}.dot.bad{background:var(--red)}
+.card{background:#0b1727e8;border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 18px 55px #0008;backdrop-filter:blur(14px)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.btn{min-height:116px;border-radius:20px;border:1px solid #365f8d;background:linear-gradient(180deg,#122b49,#0b1c30);color:#f7fbff;font-size:22px;font-weight:850;box-shadow:inset 0 1px #ffffff12,0 12px 30px #0005;touch-action:manipulation}.btn:active{transform:scale(.975);background:#17375b}.btn.wide{grid-column:1/-1;min-height:92px}.freeze{font-size:20px}.volume{margin-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.volume .btn{min-height:78px;font-size:30px}.volume .mute{font-size:16px}.msg{margin-top:13px;min-height:20px;text-align:center;color:var(--muted);font-size:12px}.pair{display:none}.pair.show{display:block}.remote.hide{display:none}label{display:block;font-size:12px;color:var(--muted);margin:12px 2px 7px}input{width:100%;font:inherit;font-size:18px;padding:14px;border-radius:13px;border:1px solid #365f8d;background:#071423;color:#fff;outline:none}.pairBtn{width:100%;margin-top:13px;padding:14px;border-radius:13px;border:1px solid #5ea9ff;background:#1f69bb;color:white;font-size:17px;font-weight:800}.help{font-size:12px;line-height:1.5;color:var(--muted);margin-top:14px}.small{font-size:11px;color:#7f96af;text-align:center;margin-top:18px}.warn{color:#ffd59c}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div><div class="title">Newline Remote</div><div id="deviceName" class="sub">Phone remote</div></div>
+    <div class="status"><span id="statusText">Not paired</span><span id="dot" class="dot"></span></div>
+  </div>
+
+  <div id="configError" class="card pair">
+    <strong>Remote site needs its relay URL</strong>
+    <div class="help">The owner of this shared Newline Remote site needs to put the deployed Apps Script /exec URL into <b>config.js</b>.</div>
+  </div>
+
+  <div id="pair" class="card pair">
+    <strong>Pair this phone</strong>
+    <div class="help">Get a six-digit pairing code from Newline Control on the classroom laptop. Pairing should happen only once on this phone.</div>
+    <label>Pairing code</label>
+    <input id="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000">
+    <label>Phone name (optional)</label>
+    <input id="name" maxlength="40" placeholder="My phone">
+    <button class="pairBtn" onclick="pairPhone()">Pair phone</button>
+    <div id="pairMsg" class="msg"></div>
+  </div>
+
+  <div id="remote" class="card remote hide">
+    <div class="grid">
+      <button class="btn" onclick="command('home')">⌂<br>Home</button>
+      <button class="btn" onclick="command('vivi')">▣<br>Vivi</button>
+      <button class="btn wide freeze" onclick="command('freeze')">❄ &nbsp; Freeze</button>
+    </div>
+    <div class="volume">
+      <button class="btn" aria-label="Volume down" onclick="command('volDown')">−</button>
+      <button class="btn mute" onclick="command('mute')">Mute</button>
+      <button class="btn" aria-label="Volume up" onclick="command('volUp')">+</button>
+    </div>
+    <div id="msg" class="msg">Ready</div>
+  </div>
+
+  <div id="installHint" class="small">After the first successful pairing, add THIS paired page to your Home Screen.</div>
+</div>
+
+<script src="config.js"></script>
+<script>
+const CFG=window.NEWLINE_REMOTE_CONFIG||{};
+const RELAY=(CFG.relayUrl||'').trim();
+const K_DEVICE='newlineRemoteDeviceV43',K_TOKEN='newlineRemoteTokenV43',K_NAME='newlineRemoteNameV43';
+const el=id=>document.getElementById(id);
+let creds={deviceId:'',token:'',deviceName:''};
+let jsonpCounter=0;
+
+function configured(){return /^https:\/\/script\.google\.com\/.+\/exec(?:\?.*)?$/i.test(RELAY)}
+function validCreds(c){return c&&/^[a-f0-9]{32}$/i.test(c.deviceId||'')&&(c.token||'').length>=32}
+
+function fromQuery(){
+  const p=new URLSearchParams(location.search);
+  const c={deviceId:(p.get('d')||'').trim(),token:(p.get('t')||'').trim(),deviceName:(p.get('n')||'').trim()};
+  return validCreds(c)?c:null;
+}
+function fromStorage(){
+  try{
+    const c={deviceId:localStorage.getItem(K_DEVICE)||'',token:localStorage.getItem(K_TOKEN)||'',deviceName:localStorage.getItem(K_NAME)||''};
+    return validCreds(c)?c:null;
+  }catch(e){return null}
+}
+function saveCreds(c,updateUrl){
+  creds=c;
+  try{localStorage.setItem(K_DEVICE,c.deviceId);localStorage.setItem(K_TOKEN,c.token);localStorage.setItem(K_NAME,c.deviceName||'Newline');}catch(e){}
+  if(updateUrl){
+    const q=new URLSearchParams({d:c.deviceId,t:c.token,n:c.deviceName||'Newline'});
+    const next=location.pathname+'?'+q.toString()+location.hash;
+    history.replaceState(null,'',next);
+  }
+}
+function clearCreds(){
+  creds={deviceId:'',token:'',deviceName:''};
+  try{localStorage.removeItem(K_DEVICE);localStorage.removeItem(K_TOKEN);localStorage.removeItem(K_NAME);}catch(e){}
+  history.replaceState(null,'',location.pathname);
+}
+function showPair(){
+  el('configError').classList.remove('show');el('pair').classList.add('show');el('remote').classList.add('hide');
+  el('statusText').textContent='Not paired';el('dot').className='dot';
+}
+function showRemote(){
+  el('configError').classList.remove('show');el('pair').classList.remove('show');el('remote').classList.remove('hide');
+}
+function showConfigError(){
+  el('configError').classList.add('show');el('pair').classList.remove('show');el('remote').classList.add('hide');
+  el('statusText').textContent='Setup needed';el('dot').className='dot bad';
+}
+function jsonp(params){
+  return new Promise((resolve,reject)=>{
+    if(!configured()){reject(new Error('Relay URL is not configured'));return}
+    const cb='__newlineJsonp'+(++jsonpCounter)+'_'+Date.now();
+    const script=document.createElement('script');
+    const q=new URLSearchParams({...params,callback:cb,_:String(Date.now())});
+    const timeout=setTimeout(()=>cleanup(new Error('Relay request timed out')),15000);
+    function cleanup(err,result){
+      clearTimeout(timeout);try{delete window[cb]}catch(e){};script.remove();
+      err?reject(err):resolve(result);
+    }
+    window[cb]=result=>cleanup(null,result);
+    script.onerror=()=>cleanup(new Error('Could not reach relay'));
+    script.src=RELAY+(RELAY.includes('?')?'&':'?')+q.toString();
+    document.head.appendChild(script);
+  });
+}
+async function pairPhone(){
+  const code=el('code').value.trim(), name=el('name').value.trim()||'Phone';
+  el('pairMsg').textContent='Pairing…';
+  try{
+    const r=await jsonp({api:'pair',code,name});
+    if(!r||!r.ok){el('pairMsg').textContent=(r&&r.message)||'Pairing failed';return}
+    const c={deviceId:r.deviceId,token:r.token,deviceName:r.deviceName||'Newline'};
+    saveCreds(c,true);
+    el('pairMsg').textContent='Paired';
+    el('deviceName').textContent=c.deviceName;
+    showRemote();
+    el('msg').textContent='Paired — now use Share → Add to Home Screen';
+    refreshStatus();
+  }catch(e){el('pairMsg').textContent=e.message||'Pairing failed'}
+}
+async function refreshStatus(){
+  if(!validCreds(creds)){showPair();return}
+  try{
+    const r=await jsonp({api:'status',deviceId:creds.deviceId,token:creds.token});
+    if(!r||!r.ok){
+      if(r&&r.unauthorized){clearCreds();showPair()}
+      return
+    }
+    showRemote();el('deviceName').textContent=r.deviceName||creds.deviceName||'Newline';
+    el('statusText').textContent=r.laptopOnline?'Laptop online':'Laptop offline';
+    el('dot').className=r.laptopOnline?'dot on':'dot bad';
+  }catch(e){
+    el('statusText').textContent='Relay unavailable';el('dot').className='dot bad';
+  }
+}
+async function command(c){
+  if(!validCreds(creds)){showPair();return}
+  const m=el('msg');m.textContent='Sending…';
+  try{
+    const r=await jsonp({api:'command',deviceId:creds.deviceId,token:creds.token,command:c});
+    if(!r||!r.ok){
+      if(r&&r.unauthorized){clearCreds();showPair()}
+      m.textContent=(r&&r.message)||'Could not send';return
+    }
+    m.textContent=r.message||'Sent';setTimeout(()=>{m.textContent='Ready'},1400);refreshStatus();
+  }catch(e){m.textContent=e.message||'Could not send'}
+}
+
+if(!configured()){showConfigError()}
+else{
+  const q=fromQuery(),s=fromStorage();
+  if(q){saveCreds(q,false);showRemote();refreshStatus()}
+  else if(s){saveCreds(s,false);showRemote();refreshStatus()}
+  else{showPair()}
+}
+setInterval(()=>{if(configured()&&validCreds(creds))refreshStatus()},5000);
+</script>
+</body>
+</html>
