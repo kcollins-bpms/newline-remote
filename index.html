@@ -15,7 +15,7 @@
 :root{color-scheme:dark;--bg:#07101d;--card:#0c1a2c;--line:#2c527d;--blue:#62adff;--text:#f4f8ff;--muted:#9fb3ca;--red:#ff7181;--green:#55dca3}
 *{box-sizing:border-box}html,body{min-height:100%}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -10%,#173c66 0,#07101d 42%,#050a11 100%);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);padding:max(20px,env(safe-area-inset-top)) 18px max(24px,env(safe-area-inset-bottom));-webkit-tap-highlight-color:transparent}
 .wrap{max-width:520px;margin:auto}.top{display:flex;align-items:center;justify-content:space-between;margin:3px 2px 20px}.title{font-size:28px;font-weight:850;letter-spacing:-.035em}.sub{font-size:12px;color:var(--muted);margin-top:3px}.status{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted)}.dot{width:11px;height:11px;border-radius:50%;background:#657386}.dot.on{background:var(--green);box-shadow:0 0 15px #55dca388}.dot.bad{background:var(--red)}
-.card{background:#0b1727e8;border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 18px 55px #0008;backdrop-filter:blur(14px)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.btn{min-height:116px;border-radius:20px;border:1px solid #365f8d;background:linear-gradient(180deg,#122b49,#0b1c30);color:#f7fbff;font-size:22px;font-weight:850;box-shadow:inset 0 1px #ffffff12,0 12px 30px #0005;touch-action:manipulation}.btn:active{transform:scale(.975);background:#17375b}.btn.wide{grid-column:1/-1;min-height:92px}.freeze{font-size:20px}.volume{margin-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.volume .btn{min-height:78px;font-size:30px}.volume .mute{font-size:16px}.msg{margin-top:13px;min-height:20px;text-align:center;color:var(--muted);font-size:12px}.pair{display:none}.pair.show{display:block}.remote.hide{display:none}label{display:block;font-size:12px;color:var(--muted);margin:12px 2px 7px}input{width:100%;font:inherit;font-size:18px;padding:14px;border-radius:13px;border:1px solid #365f8d;background:#071423;color:#fff;outline:none}.pairBtn{width:100%;margin-top:13px;padding:14px;border-radius:13px;border:1px solid #5ea9ff;background:#1f69bb;color:white;font-size:17px;font-weight:800}.help{font-size:12px;line-height:1.5;color:var(--muted);margin-top:14px}.small{font-size:11px;color:#7f96af;text-align:center;margin-top:18px}.warn{color:#ffd59c}
+.card{background:#0b1727e8;border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 18px 55px #0008;backdrop-filter:blur(14px)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.btn{min-height:116px;border-radius:20px;border:1px solid #365f8d;background:linear-gradient(180deg,#122b49,#0b1c30);color:#f7fbff;font-size:22px;font-weight:850;box-shadow:inset 0 1px #ffffff12,0 12px 30px #0005;touch-action:manipulation}.btn:active{transform:scale(.975);background:#17375b}.btn.working{transform:scale(.975);box-shadow:inset 0 0 0 2px #62adff,0 0 0 3px #62adff33,0 12px 30px #0005}.btn.okflash{box-shadow:inset 0 0 0 2px #55dca3,0 0 0 3px #55dca333,0 12px 30px #0005}.btn.errflash{box-shadow:inset 0 0 0 2px #ff7181,0 0 0 3px #ff718133,0 12px 30px #0005}.btn.wide{grid-column:1/-1;min-height:92px}.freeze{font-size:20px}.volume{margin-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.volume .btn{min-height:78px;font-size:30px}.volume .mute{font-size:16px}.msg{margin-top:13px;min-height:20px;text-align:center;color:var(--muted);font-size:12px}.pair{display:none}.pair.show{display:block}.remote.hide{display:none}label{display:block;font-size:12px;color:var(--muted);margin:12px 2px 7px}input{width:100%;font:inherit;font-size:18px;padding:14px;border-radius:13px;border:1px solid #365f8d;background:#071423;color:#fff;outline:none}.pairBtn{width:100%;margin-top:13px;padding:14px;border-radius:13px;border:1px solid #5ea9ff;background:#1f69bb;color:white;font-size:17px;font-weight:800}.help{font-size:12px;line-height:1.5;color:var(--muted);margin-top:14px}.small{font-size:11px;color:#7f96af;text-align:center;margin-top:18px}.warn{color:#ffd59c}
 </style>
 </head>
 <body>
@@ -50,19 +50,19 @@
 
   <div id="remote" class="card remote hide">
     <div class="grid">
-      <button class="btn" onclick="command('home')">⌂<br>Home</button>
-      <button class="btn" onclick="command('vivi')">▣<br>Vivi</button>
-      <button class="btn wide freeze" onclick="command('freeze')">❄ &nbsp; Freeze</button>
+      <button class="btn" onclick="sendRemoteCommand('home',this)">⌂<br>Home</button>
+      <button class="btn" onclick="sendRemoteCommand('vivi',this)">▣<br>Vivi</button>
+      <button class="btn wide freeze" onclick="sendRemoteCommand('freeze',this)">❄ &nbsp; Freeze</button>
     </div>
     <div class="volume">
-      <button class="btn" aria-label="Volume down" onclick="command('volDown')">−</button>
-      <button class="btn mute" onclick="command('mute')">Mute</button>
-      <button class="btn" aria-label="Volume up" onclick="command('volUp')">+</button>
+      <button class="btn" aria-label="Volume down" onclick="sendRemoteCommand('volDown',this)">−</button>
+      <button class="btn mute" onclick="sendRemoteCommand('mute',this)">Mute</button>
+      <button class="btn" aria-label="Volume up" onclick="sendRemoteCommand('volUp',this)">+</button>
     </div>
     <div id="msg" class="msg">Ready</div>
   </div>
 
-  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.</div>
+  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span style="opacity:.7">Phone app v47</span></div>
 </div>
 
 <script src="config.js"></script>
@@ -160,17 +160,74 @@ async function refreshStatus(){
     el('statusText').textContent='Relay unavailable';el('dot').className='dot bad';
   }
 }
-async function command(c){
+const COMMAND_LABELS={
+  home:'Home',
+  vivi:'Vivi',
+  freeze:'Freeze',
+  volDown:'Volume down',
+  mute:'Mute',
+  volUp:'Volume up'
+};
+
+function flashButton(btn,cls){
+  if(!btn)return;
+  btn.classList.remove('working','okflash','errflash');
+  void btn.offsetWidth;
+  btn.classList.add(cls);
+  setTimeout(()=>btn.classList.remove(cls),650);
+}
+
+async function waitForAck(id,btn){
+  const deadline=Date.now()+12000;
+  while(Date.now()<deadline){
+    await new Promise(r=>setTimeout(r,650));
+    try{
+      const s=await jsonp({api:'status',deviceId:creds.deviceId,token:creds.token});
+      if(!s||!s.ok)continue;
+      if(s.lastAck&&Number(s.lastAck.id)===Number(id)){
+        if(s.lastAck.ok){
+          el('msg').textContent=s.lastAck.message||'Done';
+          flashButton(btn,'okflash');
+        }else{
+          el('msg').textContent='Board error: '+(s.lastAck.message||'Command failed');
+          flashButton(btn,'errflash');
+        }
+        return;
+      }
+      if(s.lastAck&&Number(s.lastAck.id)>Number(id)){
+        el('msg').textContent='Delivered';
+        flashButton(btn,'okflash');
+        return;
+      }
+    }catch(e){}
+  }
+  el('msg').textContent='Queued — waiting for board';
+  if(btn)btn.classList.remove('working');
+}
+
+async function sendRemoteCommand(c,btn){
   if(!validCreds(creds)){showPair();return}
-  const m=el('msg');m.textContent='Sending…';
+  const m=el('msg');
+  const label=COMMAND_LABELS[c]||'Command';
+  m.textContent=label+' — sending…';
+  if(btn)btn.classList.add('working');
   try{
     const r=await jsonp({api:'command',deviceId:creds.deviceId,token:creds.token,command:c});
     if(!r||!r.ok){
       if(r&&r.unauthorized){clearCreds();showPair()}
-      m.textContent=(r&&r.message)||'Could not send';return
+      m.textContent=(r&&r.message)||'Could not send';
+      flashButton(btn,'errflash');
+      return;
     }
-    m.textContent=r.message||'Sent';setTimeout(()=>{m.textContent='Ready'},1400);refreshStatus();
-  }catch(e){m.textContent=e.message||'Could not send'}
+    m.textContent=label+' — queued';
+    await waitForAck(r.id,btn);
+    refreshStatus();
+  }catch(e){
+    m.textContent=e.message||'Could not send';
+    flashButton(btn,'errflash');
+  }finally{
+    if(btn)btn.classList.remove('working');
+  }
 }
 
 function isStandalone(){
