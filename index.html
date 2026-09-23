@@ -30,9 +30,16 @@
     <div class="help">The owner of this shared Newline Remote site needs to put the deployed Apps Script /exec URL into <b>config.js</b>.</div>
   </div>
 
+  <div id="installFirst" class="card pair">
+    <strong>Add Newline Remote to your Home Screen first</strong>
+    <div class="help">On iPhone, Safari and the installed Home Screen web app use separate storage. To make pairing truly one-time, install the app <b>before</b> pairing.</div>
+    <div class="help"><b>Safari:</b> Share → Add to Home Screen. Then close Safari and open the new Newline Remote icon.</div>
+    <div class="msg warn">Pair from the Home Screen app, not from Safari.</div>
+  </div>
+
   <div id="pair" class="card pair">
     <strong>Pair this phone</strong>
-    <div class="help">Get a six-digit pairing code from Newline Control on the classroom laptop. Pairing should happen only once on this phone.</div>
+    <div class="help">Get a six-digit pairing code from Newline Control on the classroom laptop. Because you are pairing inside the installed Home Screen app, this should happen only once.</div>
     <label>Pairing code</label>
     <input id="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000">
     <label>Phone name (optional)</label>
@@ -55,7 +62,7 @@
     <div id="msg" class="msg">Ready</div>
   </div>
 
-  <div id="installHint" class="small">After the first successful pairing, add THIS paired page to your Home Screen.</div>
+  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.</div>
 </div>
 
 <script src="config.js"></script>
@@ -96,14 +103,14 @@ function clearCreds(){
   history.replaceState(null,'',location.pathname);
 }
 function showPair(){
-  el('configError').classList.remove('show');el('pair').classList.add('show');el('remote').classList.add('hide');
+  el('configError').classList.remove('show');el('installFirst').classList.remove('show');el('pair').classList.add('show');el('remote').classList.add('hide');
   el('statusText').textContent='Not paired';el('dot').className='dot';
 }
 function showRemote(){
-  el('configError').classList.remove('show');el('pair').classList.remove('show');el('remote').classList.remove('hide');
+  el('configError').classList.remove('show');el('installFirst').classList.remove('show');el('pair').classList.remove('show');el('remote').classList.remove('hide');
 }
 function showConfigError(){
-  el('configError').classList.add('show');el('pair').classList.remove('show');el('remote').classList.add('hide');
+  el('configError').classList.add('show');el('installFirst').classList.remove('show');el('pair').classList.remove('show');el('remote').classList.add('hide');
   el('statusText').textContent='Setup needed';el('dot').className='dot bad';
 }
 function jsonp(params){
@@ -130,11 +137,11 @@ async function pairPhone(){
     const r=await jsonp({api:'pair',code,name});
     if(!r||!r.ok){el('pairMsg').textContent=(r&&r.message)||'Pairing failed';return}
     const c={deviceId:r.deviceId,token:r.token,deviceName:r.deviceName||'Newline'};
-    saveCreds(c,true);
+    saveCreds(c,false);
     el('pairMsg').textContent='Paired';
     el('deviceName').textContent=c.deviceName;
     showRemote();
-    el('msg').textContent='Paired — now use Share → Add to Home Screen';
+    el('msg').textContent='Paired — this Home Screen app will remember this phone';
     refreshStatus();
   }catch(e){el('pairMsg').textContent=e.message||'Pairing failed'}
 }
@@ -166,14 +173,31 @@ async function command(c){
   }catch(e){m.textContent=e.message||'Could not send'}
 }
 
+function isStandalone(){
+  return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+         window.navigator.standalone === true;
+}
+function showInstallFirst(){
+  el('configError').classList.remove('show');
+  el('installFirst').classList.add('show');
+  el('pair').classList.remove('show');
+  el('remote').classList.add('hide');
+  el('statusText').textContent='Install first';
+  el('dot').className='dot';
+}
+function hideInstallFirst(){el('installFirst').classList.remove('show')}
+
 if(!configured()){showConfigError()}
+else if(!isStandalone()){
+  showInstallFirst();
+}
 else{
-  const q=fromQuery(),s=fromStorage();
-  if(q){saveCreds(q,false);showRemote();refreshStatus()}
-  else if(s){saveCreds(s,false);showRemote();refreshStatus()}
+  hideInstallFirst();
+  const s=fromStorage();
+  if(s){saveCreds(s,false);showRemote();refreshStatus()}
   else{showPair()}
 }
-setInterval(()=>{if(configured()&&validCreds(creds))refreshStatus()},5000);
+setInterval(()=>{if(configured()&&isStandalone()&&validCreds(creds))refreshStatus()},5000);
 </script>
 </body>
 </html>
