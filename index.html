@@ -62,10 +62,9 @@
     <div id="msg" class="msg">Ready</div>
   </div>
 
-  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span style="opacity:.7">Phone app v49</span></div>
+  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span style="opacity:.7">Phone app v50</span></div>
 </div>
 
-<script src="config.js"></script>
 <script>
 
 if('serviceWorker' in navigator){
@@ -74,8 +73,7 @@ if('serviceWorker' in navigator){
   });
 }
 
-const CFG=window.NEWLINE_REMOTE_CONFIG||{};
-const RELAY=(CFG.relayUrl||'').trim();
+const RELAY='https://script.google.com/macros/s/AKfycbxhkC70m_P78JYvJnSq3uAo19T5ll-sbcRCxBi1_x4KAUONew_FKc_tRT40z2AtB5k2kQ/exec';
 const K_DEVICE='newlineRemoteDeviceV43',K_TOKEN='newlineRemoteTokenV43',K_NAME='newlineRemoteNameV43';
 const el=id=>document.getElementById(id);
 let creds={deviceId:'',token:'',deviceName:''};
@@ -278,6 +276,11 @@ else{
   else{showPair()}
 }
 setInterval(()=>{if(configured()&&isStandalone()&&validCreds(creds))refreshStatus()},5000);
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible' && configured() && isStandalone() && validCreds(creds)){
+    refreshStatus();
+  }
+});
 </script>
 </body>
 </html>
