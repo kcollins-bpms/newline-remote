@@ -15,7 +15,7 @@
 :root{color-scheme:dark;--bg:#07101d;--card:#0c1a2c;--line:#2c527d;--blue:#62adff;--text:#f4f8ff;--muted:#9fb3ca;--red:#ff7181;--green:#55dca3}
 *{box-sizing:border-box}html,body{min-height:100%}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -10%,#173c66 0,#07101d 42%,#050a11 100%);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);padding:max(20px,env(safe-area-inset-top)) 18px max(24px,env(safe-area-inset-bottom));-webkit-tap-highlight-color:transparent}
 .wrap{max-width:520px;margin:auto}.top{display:flex;align-items:center;justify-content:space-between;margin:3px 2px 20px}.title{font-size:28px;font-weight:850;letter-spacing:-.035em}.sub{font-size:12px;color:var(--muted);margin-top:3px}.status{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted)}.dot{width:11px;height:11px;border-radius:50%;background:#657386}.dot.on{background:var(--green);box-shadow:0 0 15px #55dca388}.dot.bad{background:var(--red)}
-.card{background:#0b1727e8;border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 18px 55px #0008;backdrop-filter:blur(14px)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.btn{min-height:116px;border-radius:20px;border:1px solid #365f8d;background:linear-gradient(180deg,#122b49,#0b1c30);color:#f7fbff;font-size:22px;font-weight:850;box-shadow:inset 0 1px #ffffff12,0 12px 30px #0005;touch-action:manipulation}.btn:active{transform:scale(.975);background:#17375b}.btn.working{transform:scale(.975);box-shadow:inset 0 0 0 2px #62adff,0 0 0 3px #62adff33,0 12px 30px #0005}.btn.okflash{box-shadow:inset 0 0 0 2px #55dca3,0 0 0 3px #55dca333,0 12px 30px #0005}.btn.errflash{box-shadow:inset 0 0 0 2px #ff7181,0 0 0 3px #ff718133,0 12px 30px #0005}.btn.wide{grid-column:1/-1;min-height:92px}.freeze{font-size:20px}.volume{margin-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.volume .btn{min-height:78px;font-size:30px}.volume .mute{font-size:16px}.msg{margin-top:13px;min-height:20px;text-align:center;color:var(--muted);font-size:12px}.pair{display:none}.pair.show{display:block}.remote.hide{display:none}label{display:block;font-size:12px;color:var(--muted);margin:12px 2px 7px}input{width:100%;font:inherit;font-size:18px;padding:14px;border-radius:13px;border:1px solid #365f8d;background:#071423;color:#fff;outline:none}.pairBtn{width:100%;margin-top:13px;padding:14px;border-radius:13px;border:1px solid #5ea9ff;background:#1f69bb;color:white;font-size:17px;font-weight:800}.help{font-size:12px;line-height:1.5;color:var(--muted);margin-top:14px}.small{font-size:11px;color:#7f96af;text-align:center;margin-top:18px}.warn{color:#ffd59c}
+.card{background:#0b1727e8;border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 18px 55px #0008;backdrop-filter:blur(14px)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.btn{min-height:116px;border-radius:20px;border:1px solid #365f8d;background:linear-gradient(180deg,#122b49,#0b1c30);color:#f7fbff;font-size:22px;font-weight:850;box-shadow:inset 0 1px #ffffff12,0 12px 30px #0005;touch-action:manipulation}.btn:active{transform:scale(.975);background:#17375b}.btn.working{transform:scale(.975);box-shadow:inset 0 0 0 2px #62adff,0 0 0 3px #62adff33,0 12px 30px #0005}.btn.okflash{box-shadow:inset 0 0 0 2px #55dca3,0 0 0 3px #55dca333,0 12px 30px #0005}.btn.errflash{box-shadow:inset 0 0 0 2px #ff7181,0 0 0 3px #ff718133,0 12px 30px #0005}.btn.wide{grid-column:1/-1;min-height:92px}.freeze{font-size:20px}.volume{margin-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.volume .btn{min-height:78px;font-size:30px}.volume .mute{font-size:16px}.msg{margin-top:13px;min-height:20px;text-align:center;color:var(--muted);font-size:12px}.latency{margin-top:2px;min-height:30px;text-align:center;color:#7891aa;font-size:10.5px;line-height:1.45}.pair{display:none}.pair.show{display:block}.remote.hide{display:none}label{display:block;font-size:12px;color:var(--muted);margin:12px 2px 7px}input{width:100%;font:inherit;font-size:18px;padding:14px;border-radius:13px;border:1px solid #365f8d;background:#071423;color:#fff;outline:none}.pairBtn{width:100%;margin-top:13px;padding:14px;border-radius:13px;border:1px solid #5ea9ff;background:#1f69bb;color:white;font-size:17px;font-weight:800}.help{font-size:12px;line-height:1.5;color:var(--muted);margin-top:14px}.small{font-size:11px;color:#7f96af;text-align:center;margin-top:18px}.warn{color:#ffd59c}
 </style>
 </head>
 <body>
@@ -60,9 +60,10 @@
       <button class="btn" aria-label="Volume up" onclick="sendRemoteCommand('volUp',this)">+</button>
     </div>
     <div id="msg" class="msg">Ready</div>
+    <div id="latency" class="latency">Latency diagnostics will appear after a command.</div>
   </div>
 
-  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span style="opacity:.7">Phone app v50</span></div>
+  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span style="opacity:.7">Phone app v52</span></div>
 </div>
 
 <script>
@@ -198,50 +199,102 @@ function flashButton(btn,cls){
   setTimeout(()=>btn.classList.remove(cls),650);
 }
 
-async function waitForAck(id,btn){
+const LATENCY_KEY='newlineRemoteLatencyV52';
+
+function latencySamples(){
+  try{
+    const a=JSON.parse(localStorage.getItem(LATENCY_KEY)||'[]');
+    return Array.isArray(a)?a:[];
+  }catch(e){return []}
+}
+function rememberLatency(sample){
+  try{
+    const a=latencySamples();
+    a.push(sample);
+    while(a.length>20)a.shift();
+    localStorage.setItem(LATENCY_KEY,JSON.stringify(a));
+  }catch(e){}
+}
+function avgMs(a,key){
+  const vals=a.map(x=>Number(x[key]||0)).filter(x=>x>0);
+  return vals.length?Math.round(vals.reduce((s,x)=>s+x,0)/vals.length):0;
+}
+function showLatency(sample){
+  const a=latencySamples();
+  const avg=avgMs(a,'totalMs');
+  el('latency').textContent=
+    'Tap→confirmed '+Number(sample.totalMs||0)+' ms'+
+    ' · submit '+Number(sample.submitMs||0)+
+    ' · queue '+Number(sample.queueWaitMs||0)+
+    ' · poll '+Number(sample.pollRttMs||0)+
+    ' · board '+Number(sample.boardMs||0)+
+    ' · relay→ACK '+Number(sample.relayToAckMs||0)+
+    (avg?' · avg '+avg+' ms ('+a.length+')':'');
+}
+
+async function waitForAck(id,btn,tapStarted,submitMs){
   const deadline=Date.now()+12000;
   while(Date.now()<deadline){
-    await new Promise(r=>setTimeout(r,650));
+    await new Promise(r=>setTimeout(r,300));
     try{
       const s=await jsonp({api:'status',deviceId:creds.deviceId,token:creds.token});
       if(!s||!s.ok)continue;
       if(s.lastAck&&Number(s.lastAck.id)===Number(id)){
-        if(s.lastAck.ok){
-          el('msg').textContent=s.lastAck.message||'Done';
+        const ack=s.lastAck;
+        const sample={
+          totalMs:Date.now()-tapStarted,
+          submitMs:submitMs,
+          queueWaitMs:Number(ack.queueWaitMs||0),
+          pollRttMs:Number(ack.pollRttMs||0),
+          boardMs:Number(ack.boardMs||0),
+          relayToAckMs:Number(ack.relayToAckMs||0),
+          at:Date.now()
+        };
+        rememberLatency(sample);
+        showLatency(sample);
+        if(ack.ok){
+          el('msg').textContent=(ack.message||'Done')+' · '+sample.totalMs+' ms';
           flashButton(btn,'okflash');
         }else{
-          el('msg').textContent='Board error: '+(s.lastAck.message||'Command failed');
+          el('msg').textContent='Board error: '+(ack.message||'Command failed');
           flashButton(btn,'errflash');
         }
-        return;
+        return ack;
       }
       if(s.lastAck&&Number(s.lastAck.id)>Number(id)){
-        el('msg').textContent='Delivered';
+        const sample={totalMs:Date.now()-tapStarted,submitMs:submitMs,at:Date.now()};
+        rememberLatency(sample);
+        showLatency(sample);
+        el('msg').textContent='Delivered · '+sample.totalMs+' ms';
         flashButton(btn,'okflash');
-        return;
+        return s.lastAck;
       }
     }catch(e){}
   }
   el('msg').textContent='Queued — waiting for board';
   if(btn)btn.classList.remove('working');
+  return null;
 }
 
 async function sendRemoteCommand(c,btn){
   if(!validCreds(creds)){showPair();return}
   const m=el('msg');
   const label=COMMAND_LABELS[c]||'Command';
+  const tapStarted=Date.now();
   m.textContent=label+' — sending…';
   if(btn)btn.classList.add('working');
   try{
+    const submitStarted=Date.now();
     const r=await jsonp({api:'command',deviceId:creds.deviceId,token:creds.token,command:c});
+    const submitMs=Date.now()-submitStarted;
     if(!r||!r.ok){
       if(r&&r.unauthorized){clearCreds();showPair()}
       m.textContent=(r&&r.message)||'Could not send';
       flashButton(btn,'errflash');
       return;
     }
-    m.textContent=label+' — queued';
-    await waitForAck(r.id,btn);
+    m.textContent=label+' — queued · submit '+submitMs+' ms';
+    await waitForAck(r.id,btn,tapStarted,submitMs);
     refreshStatus();
   }catch(e){
     m.textContent=e.message||'Could not send';
