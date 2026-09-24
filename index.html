@@ -62,17 +62,26 @@
     <div id="msg" class="msg">Ready</div>
   </div>
 
-  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span style="opacity:.7">Phone app v47</span></div>
+  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span style="opacity:.7">Phone app v49</span></div>
 </div>
 
 <script src="config.js"></script>
 <script>
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  });
+}
+
 const CFG=window.NEWLINE_REMOTE_CONFIG||{};
 const RELAY=(CFG.relayUrl||'').trim();
 const K_DEVICE='newlineRemoteDeviceV43',K_TOKEN='newlineRemoteTokenV43',K_NAME='newlineRemoteNameV43';
 const el=id=>document.getElementById(id);
 let creds={deviceId:'',token:'',deviceName:''};
 let jsonpCounter=0;
+const APP_STARTED_AT=Date.now();
+const STARTUP_GRACE_MS=60000;
 
 function configured(){return /^https:\/\/script\.google\.com\/.+\/exec(?:\?.*)?$/i.test(RELAY)}
 function validCreds(c){return c&&/^[a-f0-9]{32}$/i.test(c.deviceId||'')&&(c.token||'').length>=32}
@@ -154,10 +163,24 @@ async function refreshStatus(){
       return
     }
     showRemote();el('deviceName').textContent=r.deviceName||creds.deviceName||'Newline';
-    el('statusText').textContent=r.laptopOnline?'Laptop online':'Laptop offline';
-    el('dot').className=r.laptopOnline?'dot on':'dot bad';
+    if(r.laptopOnline){
+      el('statusText').textContent='Laptop online';
+      el('dot').className='dot on';
+    }else if(Date.now()-APP_STARTED_AT < STARTUP_GRACE_MS){
+      el('statusText').textContent='Laptop reconnecting…';
+      el('dot').className='dot';
+    }else{
+      el('statusText').textContent='Laptop offline';
+      el('dot').className='dot bad';
+    }
   }catch(e){
-    el('statusText').textContent='Relay unavailable';el('dot').className='dot bad';
+    if(Date.now()-APP_STARTED_AT < STARTUP_GRACE_MS){
+      el('statusText').textContent='Connecting…';
+      el('dot').className='dot';
+    }else{
+      el('statusText').textContent='Relay unavailable';
+      el('dot').className='dot bad';
+    }
   }
 }
 const COMMAND_LABELS={
