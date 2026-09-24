@@ -63,7 +63,7 @@
     <div id="latency" class="latency">Latency diagnostics will appear after a command.</div>
   </div>
 
-  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span style="opacity:.7">Phone app v52</span></div>
+  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span style="opacity:.7">Phone app v53</span></div>
 </div>
 
 <script>
@@ -235,7 +235,7 @@ function showLatency(sample){
 async function waitForAck(id,btn,tapStarted,submitMs){
   const deadline=Date.now()+12000;
   while(Date.now()<deadline){
-    await new Promise(r=>setTimeout(r,300));
+    await new Promise(r=>setTimeout(r,25));
     try{
       const s=await jsonp({api:'status',deviceId:creds.deviceId,token:creds.token});
       if(!s||!s.ok)continue;
