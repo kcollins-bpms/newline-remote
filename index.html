@@ -26,8 +26,8 @@
   </div>
 
   <div id="configError" class="card pair">
-    <strong>Remote site needs its relay URL</strong>
-    <div class="help">The owner of this shared Newline Remote site needs to put the deployed Apps Script /exec URL into <b>config.js</b>.</div>
+    <strong>Realtime relay unavailable</strong>
+    <div class="help">The shared Newline Remote relay could not be reached. Check the phone's internet connection and try again.</div>
   </div>
 
   <div id="installFirst" class="card pair">
@@ -60,128 +60,334 @@
       <button class="btn" aria-label="Volume up" onclick="sendRemoteCommand('volUp',this)">+</button>
     </div>
     <div id="msg" class="msg">Ready</div>
-    <div id="latency" class="latency">Latency diagnostics will appear after a command.</div>
+    <div id="latency" class="latency">Realtime latency will appear after a command.</div>
   </div>
 
-  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span style="opacity:.7">Phone app v53</span></div>
+  <div id="installHint" class="small">Realtime pairing is stored inside the installed Home Screen app.<br><span style="opacity:.7">Phone app v54</span></div>
 </div>
 
 <script>
-
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{});
   });
 }
 
-const RELAY='https://script.google.com/macros/s/AKfycbxhkC70m_P78JYvJnSq3uAo19T5ll-sbcRCxBi1_x4KAUONew_FKc_tRT40z2AtB5k2kQ/exec';
-const K_DEVICE='newlineRemoteDeviceV43',K_TOKEN='newlineRemoteTokenV43',K_NAME='newlineRemoteNameV43';
-const el=id=>document.getElementById(id);
-let creds={deviceId:'',token:'',deviceName:''};
-let jsonpCounter=0;
-const APP_STARTED_AT=Date.now();
-const STARTUP_GRACE_MS=60000;
+const RELAY_BASE='https://newline-control-relay.kcollins-360.workers.dev';
+const RELAY_WS='wss://newline-control-relay.kcollins-360.workers.dev/ws';
 
-function configured(){return /^https:\/\/script\.google\.com\/.+\/exec(?:\?.*)?$/i.test(RELAY)}
+const K_DEVICE='newlineRealtimeDeviceV54';
+const K_TOKEN='newlineRealtimeTokenV54';
+const K_NAME='newlineRealtimeNameV54';
+const LATENCY_KEY='newlineRealtimeLatencyV54';
+
+const el=id=>document.getElementById(id);
+
+let creds={deviceId:'',token:'',deviceName:''};
+let ws=null;
+let wsAuthed=false;
+let reconnectTimer=null;
+let reconnectDelay=700;
+let pending=new Map();
+let pingTimer=null;
+
+function configured(){return /^https:\/\/.+\.workers\.dev$/i.test(RELAY_BASE)}
 function validCreds(c){return c&&/^[a-f0-9]{32}$/i.test(c.deviceId||'')&&(c.token||'').length>=32}
 
-function fromQuery(){
-  const p=new URLSearchParams(location.search);
-  const c={deviceId:(p.get('d')||'').trim(),token:(p.get('t')||'').trim(),deviceName:(p.get('n')||'').trim()};
-  return validCreds(c)?c:null;
-}
 function fromStorage(){
   try{
-    const c={deviceId:localStorage.getItem(K_DEVICE)||'',token:localStorage.getItem(K_TOKEN)||'',deviceName:localStorage.getItem(K_NAME)||''};
+    const c={
+      deviceId:localStorage.getItem(K_DEVICE)||'',
+      token:localStorage.getItem(K_TOKEN)||'',
+      deviceName:localStorage.getItem(K_NAME)||''
+    };
     return validCreds(c)?c:null;
   }catch(e){return null}
 }
-function saveCreds(c,updateUrl){
+
+function saveCreds(c){
   creds=c;
-  try{localStorage.setItem(K_DEVICE,c.deviceId);localStorage.setItem(K_TOKEN,c.token);localStorage.setItem(K_NAME,c.deviceName||'Newline');}catch(e){}
-  if(updateUrl){
-    const q=new URLSearchParams({d:c.deviceId,t:c.token,n:c.deviceName||'Newline'});
-    const next=location.pathname+'?'+q.toString()+location.hash;
-    history.replaceState(null,'',next);
-  }
+  try{
+    localStorage.setItem(K_DEVICE,c.deviceId);
+    localStorage.setItem(K_TOKEN,c.token);
+    localStorage.setItem(K_NAME,c.deviceName||'Newline');
+  }catch(e){}
 }
+
 function clearCreds(){
   creds={deviceId:'',token:'',deviceName:''};
-  try{localStorage.removeItem(K_DEVICE);localStorage.removeItem(K_TOKEN);localStorage.removeItem(K_NAME);}catch(e){}
-  history.replaceState(null,'',location.pathname);
-}
-function showPair(){
-  el('configError').classList.remove('show');el('installFirst').classList.remove('show');el('pair').classList.add('show');el('remote').classList.add('hide');
-  el('statusText').textContent='Not paired';el('dot').className='dot';
-}
-function showRemote(){
-  el('configError').classList.remove('show');el('installFirst').classList.remove('show');el('pair').classList.remove('show');el('remote').classList.remove('hide');
-}
-function showConfigError(){
-  el('configError').classList.add('show');el('installFirst').classList.remove('show');el('pair').classList.remove('show');el('remote').classList.add('hide');
-  el('statusText').textContent='Setup needed';el('dot').className='dot bad';
-}
-function jsonp(params){
-  return new Promise((resolve,reject)=>{
-    if(!configured()){reject(new Error('Relay URL is not configured'));return}
-    const cb='__newlineJsonp'+(++jsonpCounter)+'_'+Date.now();
-    const script=document.createElement('script');
-    const q=new URLSearchParams({...params,callback:cb,_:String(Date.now())});
-    const timeout=setTimeout(()=>cleanup(new Error('Relay request timed out')),15000);
-    function cleanup(err,result){
-      clearTimeout(timeout);try{delete window[cb]}catch(e){};script.remove();
-      err?reject(err):resolve(result);
-    }
-    window[cb]=result=>cleanup(null,result);
-    script.onerror=()=>cleanup(new Error('Could not reach relay'));
-    script.src=RELAY+(RELAY.includes('?')?'&':'?')+q.toString();
-    document.head.appendChild(script);
-  });
-}
-async function pairPhone(){
-  const code=el('code').value.trim(), name=el('name').value.trim()||'Phone';
-  el('pairMsg').textContent='Pairing…';
   try{
-    const r=await jsonp({api:'pair',code,name});
-    if(!r||!r.ok){el('pairMsg').textContent=(r&&r.message)||'Pairing failed';return}
-    const c={deviceId:r.deviceId,token:r.token,deviceName:r.deviceName||'Newline'};
-    saveCreds(c,false);
+    localStorage.removeItem(K_DEVICE);
+    localStorage.removeItem(K_TOKEN);
+    localStorage.removeItem(K_NAME);
+  }catch(e){}
+}
+
+function setStatus(text,kind='idle'){
+  el('statusText').textContent=text;
+  el('dot').className=kind==='on'?'dot on':kind==='bad'?'dot bad':'dot';
+}
+
+function showPair(){
+  el('configError').classList.remove('show');
+  el('installFirst').classList.remove('show');
+  el('pair').classList.add('show');
+  el('remote').classList.add('hide');
+  setStatus('Not paired');
+}
+
+function showRemote(){
+  el('configError').classList.remove('show');
+  el('installFirst').classList.remove('show');
+  el('pair').classList.remove('show');
+  el('remote').classList.remove('hide');
+}
+
+function showConfigError(){
+  el('configError').classList.add('show');
+  el('installFirst').classList.remove('show');
+  el('pair').classList.remove('show');
+  el('remote').classList.add('hide');
+  setStatus('Relay unavailable','bad');
+}
+
+function isStandalone(){
+  return (window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches) ||
+         window.navigator.standalone===true;
+}
+
+function showInstallFirst(){
+  el('configError').classList.remove('show');
+  el('installFirst').classList.add('show');
+  el('pair').classList.remove('show');
+  el('remote').classList.add('hide');
+  setStatus('Install first');
+}
+
+async function api(path,body){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),12000);
+  try{
+    const r=await fetch(RELAY_BASE+path,{
+      method:'POST',
+      headers:{'content-type':'application/json'},
+      body:JSON.stringify(body||{}),
+      cache:'no-store',
+      signal:controller.signal
+    });
+    let data={};
+    try{data=await r.json()}catch(e){}
+    if(!r.ok&&!data.message)data.message='Relay request failed ('+r.status+')';
+    return data;
+  }finally{
+    clearTimeout(timer);
+  }
+}
+
+async function pairPhone(){
+  const code=el('code').value.trim();
+  const phoneName=el('name').value.trim()||'Phone';
+  el('pairMsg').textContent='Pairing…';
+
+  try{
+    const r=await api('/api/pair',{code,phoneName});
+    if(!r||!r.ok){
+      el('pairMsg').textContent=(r&&r.message)||'Pairing failed';
+      return;
+    }
+
+    const c={
+      deviceId:r.deviceId,
+      token:r.token,
+      deviceName:r.deviceName||'Newline'
+    };
+    saveCreds(c);
     el('pairMsg').textContent='Paired';
     el('deviceName').textContent=c.deviceName;
     showRemote();
-    el('msg').textContent='Paired — this Home Screen app will remember this phone';
-    refreshStatus();
-  }catch(e){el('pairMsg').textContent=e.message||'Pairing failed'}
-}
-async function refreshStatus(){
-  if(!validCreds(creds)){showPair();return}
-  try{
-    const r=await jsonp({api:'status',deviceId:creds.deviceId,token:creds.token});
-    if(!r||!r.ok){
-      if(r&&r.unauthorized){clearCreds();showPair()}
-      return
-    }
-    showRemote();el('deviceName').textContent=r.deviceName||creds.deviceName||'Newline';
-    if(r.laptopOnline){
-      el('statusText').textContent='Laptop online';
-      el('dot').className='dot on';
-    }else if(Date.now()-APP_STARTED_AT < STARTUP_GRACE_MS){
-      el('statusText').textContent='Laptop reconnecting…';
-      el('dot').className='dot';
-    }else{
-      el('statusText').textContent='Laptop offline';
-      el('dot').className='dot bad';
-    }
+    el('msg').textContent='Paired — connecting realtime…';
+    connectRealtime(true);
   }catch(e){
-    if(Date.now()-APP_STARTED_AT < STARTUP_GRACE_MS){
-      el('statusText').textContent='Connecting…';
-      el('dot').className='dot';
-    }else{
-      el('statusText').textContent='Relay unavailable';
-      el('dot').className='dot bad';
-    }
+    el('pairMsg').textContent=(e&&e.message)||'Pairing failed';
   }
 }
+
+function closeSocket(){
+  clearTimeout(reconnectTimer);
+  reconnectTimer=null;
+  clearInterval(pingTimer);
+  pingTimer=null;
+  wsAuthed=false;
+  if(ws){
+    try{
+      ws.onclose=null;
+      ws.onerror=null;
+      ws.close();
+    }catch(e){}
+  }
+  ws=null;
+}
+
+function scheduleReconnect(){
+  if(!validCreds(creds)||document.visibilityState==='hidden')return;
+  if(reconnectTimer)return;
+  reconnectTimer=setTimeout(()=>{
+    reconnectTimer=null;
+    connectRealtime(false);
+  },reconnectDelay);
+  reconnectDelay=Math.min(5000,Math.round(reconnectDelay*1.55));
+}
+
+function connectRealtime(force=false){
+  if(!configured()){
+    showConfigError();
+    return;
+  }
+  if(!validCreds(creds)){
+    showPair();
+    return;
+  }
+
+  if(!force && ws && (ws.readyState===WebSocket.OPEN||ws.readyState===WebSocket.CONNECTING))return;
+
+  closeSocket();
+  showRemote();
+  setStatus('Connecting…');
+  el('deviceName').textContent=creds.deviceName||'Newline';
+
+  try{
+    ws=new WebSocket(RELAY_WS+'?deviceId='+encodeURIComponent(creds.deviceId));
+  }catch(e){
+    setStatus('Relay unavailable','bad');
+    scheduleReconnect();
+    return;
+  }
+
+  ws.onopen=()=>{
+    reconnectDelay=700;
+    ws.send(JSON.stringify({
+      type:'auth',
+      role:'phone',
+      token:creds.token
+    }));
+  };
+
+  ws.onmessage=event=>{
+    let m;
+    try{m=JSON.parse(event.data)}catch(e){return}
+
+    if(m.type==='auth-ok'&&m.role==='phone'){
+      wsAuthed=true;
+      showRemote();
+      el('deviceName').textContent=m.deviceName||creds.deviceName||'Newline';
+      setStatus(m.laptopOnline?'Laptop online':'Laptop offline',m.laptopOnline?'on':'bad');
+      el('msg').textContent=m.laptopOnline?'Ready':'Laptop offline';
+      clearInterval(pingTimer);
+      pingTimer=setInterval(()=>{
+        if(ws&&ws.readyState===WebSocket.OPEN){
+          try{ws.send(JSON.stringify({type:'ping'}))}catch(e){}
+        }
+      },20000);
+      return;
+    }
+
+    if(m.type==='auth-error'){
+      wsAuthed=false;
+      if(/phone/i.test(String(m.message||''))){
+        clearCreds();
+        closeSocket();
+        showPair();
+        el('pairMsg').textContent='This phone needs to be paired with the realtime relay.';
+      }else{
+        setStatus('Authentication failed','bad');
+        el('msg').textContent=m.message||'Authentication failed';
+      }
+      return;
+    }
+
+    if(m.type==='status'){
+      el('deviceName').textContent=m.deviceName||creds.deviceName||'Newline';
+      setStatus(m.laptopOnline?'Laptop online':'Laptop offline',m.laptopOnline?'on':'bad');
+      return;
+    }
+
+    if(m.type==='command-accepted'){
+      const p=pending.get(String(m.requestId||''));
+      if(p){
+        p.acceptedAt=Date.now();
+        p.queuedAt=Number(m.queuedAt||0);
+        el('msg').textContent=p.label+' — sent';
+      }
+      return;
+    }
+
+    if(m.type==='command-error'){
+      const key=String(m.requestId||'');
+      const p=pending.get(key);
+      if(p){
+        pending.delete(key);
+        el('msg').textContent=m.message||'Command failed';
+        flashButton(p.btn,'errflash');
+      }else{
+        el('msg').textContent=m.message||'Command failed';
+      }
+      return;
+    }
+
+    if(m.type==='ack'){
+      const key=String(m.requestId||'');
+      const p=pending.get(key);
+      if(!p)return;
+      pending.delete(key);
+
+      const totalMs=Date.now()-p.tapStarted;
+      const acceptedMs=p.acceptedAt?Math.max(0,p.acceptedAt-p.tapStarted):0;
+      const boardMs=Math.max(0,Number(m.boardMs||0));
+      const realtimeMs=Math.max(0,Number(m.realtimeMs||0));
+
+      const sample={
+        totalMs,
+        acceptedMs,
+        realtimeMs,
+        boardMs,
+        at:Date.now()
+      };
+      rememberLatency(sample);
+      showLatency(sample);
+
+      if(m.ok){
+        el('msg').textContent=(m.message||'Done')+' · '+totalMs+' ms';
+        flashButton(p.btn,'okflash');
+      }else{
+        el('msg').textContent='Board error: '+(m.message||'Command failed');
+        flashButton(p.btn,'errflash');
+      }
+      return;
+    }
+
+    if(m.type==='revoked'){
+      clearCreds();
+      closeSocket();
+      showPair();
+      el('pairMsg').textContent='This phone was revoked. Pair it again to continue.';
+    }
+  };
+
+  ws.onerror=()=>{
+    if(!wsAuthed)setStatus('Connecting…');
+  };
+
+  ws.onclose=()=>{
+    wsAuthed=false;
+    clearInterval(pingTimer);
+    pingTimer=null;
+    if(validCreds(creds)){
+      setStatus('Reconnecting…');
+      scheduleReconnect();
+    }
+  };
+}
+
 const COMMAND_LABELS={
   home:'Home',
   vivi:'Vivi',
@@ -199,14 +405,13 @@ function flashButton(btn,cls){
   setTimeout(()=>btn.classList.remove(cls),650);
 }
 
-const LATENCY_KEY='newlineRemoteLatencyV52';
-
 function latencySamples(){
   try{
     const a=JSON.parse(localStorage.getItem(LATENCY_KEY)||'[]');
     return Array.isArray(a)?a:[];
   }catch(e){return []}
 }
+
 function rememberLatency(sample){
   try{
     const a=latencySamples();
@@ -215,124 +420,109 @@ function rememberLatency(sample){
     localStorage.setItem(LATENCY_KEY,JSON.stringify(a));
   }catch(e){}
 }
-function avgMs(a,key){
-  const vals=a.map(x=>Number(x[key]||0)).filter(x=>x>0);
-  return vals.length?Math.round(vals.reduce((s,x)=>s+x,0)/vals.length):0;
-}
-function showLatency(sample){
+
+function averageTotal(){
   const a=latencySamples();
-  const avg=avgMs(a,'totalMs');
+  const vals=a.map(x=>Number(x.totalMs||0)).filter(x=>x>0);
+  if(!vals.length)return 0;
+  return Math.round(vals.reduce((s,x)=>s+x,0)/vals.length);
+}
+
+function showLatency(sample){
+  const avg=averageTotal();
   el('latency').textContent=
     'Tap→confirmed '+Number(sample.totalMs||0)+' ms'+
-    ' · submit '+Number(sample.submitMs||0)+
-    ' · queue '+Number(sample.queueWaitMs||0)+
-    ' · poll '+Number(sample.pollRttMs||0)+
+    ' · relay accepted '+Number(sample.acceptedMs||0)+
+    ' · realtime '+Number(sample.realtimeMs||0)+
     ' · board '+Number(sample.boardMs||0)+
-    ' · relay→ACK '+Number(sample.relayToAckMs||0)+
-    (avg?' · avg '+avg+' ms ('+a.length+')':'');
+    (avg?' · avg '+avg+' ms ('+latencySamples().length+')':'');
 }
 
-async function waitForAck(id,btn,tapStarted,submitMs){
-  const deadline=Date.now()+12000;
-  while(Date.now()<deadline){
-    await new Promise(r=>setTimeout(r,25));
-    try{
-      const s=await jsonp({api:'status',deviceId:creds.deviceId,token:creds.token});
-      if(!s||!s.ok)continue;
-      if(s.lastAck&&Number(s.lastAck.id)===Number(id)){
-        const ack=s.lastAck;
-        const sample={
-          totalMs:Date.now()-tapStarted,
-          submitMs:submitMs,
-          queueWaitMs:Number(ack.queueWaitMs||0),
-          pollRttMs:Number(ack.pollRttMs||0),
-          boardMs:Number(ack.boardMs||0),
-          relayToAckMs:Number(ack.relayToAckMs||0),
-          at:Date.now()
-        };
-        rememberLatency(sample);
-        showLatency(sample);
-        if(ack.ok){
-          el('msg').textContent=(ack.message||'Done')+' · '+sample.totalMs+' ms';
-          flashButton(btn,'okflash');
-        }else{
-          el('msg').textContent='Board error: '+(ack.message||'Command failed');
-          flashButton(btn,'errflash');
-        }
-        return ack;
-      }
-      if(s.lastAck&&Number(s.lastAck.id)>Number(id)){
-        const sample={totalMs:Date.now()-tapStarted,submitMs:submitMs,at:Date.now()};
-        rememberLatency(sample);
-        showLatency(sample);
-        el('msg').textContent='Delivered · '+sample.totalMs+' ms';
-        flashButton(btn,'okflash');
-        return s.lastAck;
-      }
-    }catch(e){}
+async function waitForReady(maxMs=2200){
+  if(wsAuthed&&ws&&ws.readyState===WebSocket.OPEN)return true;
+  connectRealtime(false);
+  const start=Date.now();
+  while(Date.now()-start<maxMs){
+    if(wsAuthed&&ws&&ws.readyState===WebSocket.OPEN)return true;
+    await new Promise(r=>setTimeout(r,50));
   }
-  el('msg').textContent='Queued — waiting for board';
-  if(btn)btn.classList.remove('working');
-  return null;
+  return false;
 }
 
-async function sendRemoteCommand(c,btn){
-  if(!validCreds(creds)){showPair();return}
-  const m=el('msg');
-  const label=COMMAND_LABELS[c]||'Command';
+async function sendRemoteCommand(command,btn){
+  if(!validCreds(creds)){
+    showPair();
+    return;
+  }
+
+  const label=COMMAND_LABELS[command]||'Command';
   const tapStarted=Date.now();
-  m.textContent=label+' — sending…';
+  el('msg').textContent=label+' — sending…';
   if(btn)btn.classList.add('working');
-  try{
-    const submitStarted=Date.now();
-    const r=await jsonp({api:'command',deviceId:creds.deviceId,token:creds.token,command:c});
-    const submitMs=Date.now()-submitStarted;
-    if(!r||!r.ok){
-      if(r&&r.unauthorized){clearCreds();showPair()}
-      m.textContent=(r&&r.message)||'Could not send';
-      flashButton(btn,'errflash');
-      return;
-    }
-    m.textContent=label+' — queued · submit '+submitMs+' ms';
-    await waitForAck(r.id,btn,tapStarted,submitMs);
-    refreshStatus();
-  }catch(e){
-    m.textContent=e.message||'Could not send';
+
+  const ready=await waitForReady();
+  if(!ready){
+    el('msg').textContent='Realtime connection unavailable';
     flashButton(btn,'errflash');
-  }finally{
-    if(btn)btn.classList.remove('working');
+    return;
+  }
+
+  const requestId=(crypto.randomUUID?crypto.randomUUID():
+    Date.now().toString(36)+'-'+Math.random().toString(36).slice(2));
+
+  pending.set(requestId,{
+    tapStarted,
+    acceptedAt:0,
+    queuedAt:0,
+    btn,
+    label
+  });
+
+  try{
+    ws.send(JSON.stringify({
+      type:'command',
+      requestId,
+      command
+    }));
+
+    setTimeout(()=>{
+      const p=pending.get(requestId);
+      if(p){
+        pending.delete(requestId);
+        el('msg').textContent=label+' — no confirmation received';
+        flashButton(btn,'errflash');
+      }
+    },5000);
+  }catch(e){
+    pending.delete(requestId);
+    el('msg').textContent='Could not send command';
+    flashButton(btn,'errflash');
   }
 }
 
-function isStandalone(){
-  return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
-         window.navigator.standalone === true;
-}
-function showInstallFirst(){
-  el('configError').classList.remove('show');
-  el('installFirst').classList.add('show');
-  el('pair').classList.remove('show');
-  el('remote').classList.add('hide');
-  el('statusText').textContent='Install first';
-  el('dot').className='dot';
-}
-function hideInstallFirst(){el('installFirst').classList.remove('show')}
-
-if(!configured()){showConfigError()}
-else if(!isStandalone()){
+if(!configured()){
+  showConfigError();
+}else if(!isStandalone()){
   showInstallFirst();
-}
-else{
-  hideInstallFirst();
-  const s=fromStorage();
-  if(s){saveCreds(s,false);showRemote();refreshStatus()}
-  else{showPair()}
-}
-setInterval(()=>{if(configured()&&isStandalone()&&validCreds(creds))refreshStatus()},5000);
-document.addEventListener('visibilitychange',()=>{
-  if(document.visibilityState==='visible' && configured() && isStandalone() && validCreds(creds)){
-    refreshStatus();
+}else{
+  const saved=fromStorage();
+  if(saved){
+    saveCreds(saved);
+    showRemote();
+    connectRealtime(true);
+  }else{
+    showPair();
   }
+}
+
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'&&validCreds(creds)){
+    connectRealtime(true);
+  }
+});
+
+window.addEventListener('online',()=>{
+  if(validCreds(creds))connectRealtime(true);
 });
 </script>
 </body>
