@@ -1,4 +1,4 @@
-const CACHE='newline-remote-v54';
+const CACHE='newline-remote-v58';
 const CORE=[
   './',
   './index.html',
