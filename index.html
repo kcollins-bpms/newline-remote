@@ -63,7 +63,7 @@
     <div id="latency" class="latency">Realtime latency will appear after a command.</div>
   </div>
 
-  <div id="installHint" class="small">Realtime pairing is stored inside the installed Home Screen app.<br><span style="opacity:.7">Phone app v58</span></div>
+  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span style="opacity:.7">Phone app v59</span></div>
 </div>
 
 <script>
@@ -74,22 +74,15 @@ if('serviceWorker' in navigator){
 }
 
 const RELAY_BASE='https://newline-control-relay.kcollins-360.workers.dev';
-const RELAY_WS='wss://newline-control-relay.kcollins-360.workers.dev/ws';
-
 const K_DEVICE='newlineRealtimeDeviceV54';
 const K_TOKEN='newlineRealtimeTokenV54';
 const K_NAME='newlineRealtimeNameV54';
-const LATENCY_KEY='newlineRealtimeLatencyV54';
+const LATENCY_KEY='newlineHttpsLatencyV59';
 
 const el=id=>document.getElementById(id);
-
 let creds={deviceId:'',token:'',deviceName:''};
-let ws=null;
-let wsAuthed=false;
-let reconnectTimer=null;
-let reconnectDelay=700;
-let pending=new Map();
-let pingTimer=null;
+let statusTimer=null;
+let statusBusy=false;
 
 function configured(){return /^https:\/\/.+\.workers\.dev$/i.test(RELAY_BASE)}
 function validCreds(c){return c&&/^[a-f0-9]{32}$/i.test(c.deviceId||'')&&(c.token||'').length>=32}
@@ -164,9 +157,9 @@ function showInstallFirst(){
   setStatus('Install first');
 }
 
-async function api(path,body){
+async function api(path,body,timeoutMs=12000){
   const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),12000);
+  const timer=setTimeout(()=>controller.abort(),timeoutMs);
   try{
     const r=await fetch(RELAY_BASE+path,{
       method:'POST',
@@ -205,187 +198,51 @@ async function pairPhone(){
     el('pairMsg').textContent='Paired';
     el('deviceName').textContent=c.deviceName;
     showRemote();
-    el('msg').textContent='Paired — connecting realtime…';
-    connectRealtime(true);
+    el('msg').textContent='Paired — checking laptop…';
+    await refreshStatus();
+    startStatusLoop();
   }catch(e){
     el('pairMsg').textContent=(e&&e.message)||'Pairing failed';
   }
 }
 
-function closeSocket(){
-  clearTimeout(reconnectTimer);
-  reconnectTimer=null;
-  clearInterval(pingTimer);
-  pingTimer=null;
-  wsAuthed=false;
-  if(ws){
-    try{
-      ws.onclose=null;
-      ws.onerror=null;
-      ws.close();
-    }catch(e){}
-  }
-  ws=null;
-}
-
-function scheduleReconnect(){
-  if(!validCreds(creds)||document.visibilityState==='hidden')return;
-  if(reconnectTimer)return;
-  reconnectTimer=setTimeout(()=>{
-    reconnectTimer=null;
-    connectRealtime(false);
-  },reconnectDelay);
-  reconnectDelay=Math.min(5000,Math.round(reconnectDelay*1.55));
-}
-
-function connectRealtime(force=false){
-  if(!configured()){
-    showConfigError();
-    return;
-  }
-  if(!validCreds(creds)){
-    showPair();
-    return;
-  }
-
-  if(!force && ws && (ws.readyState===WebSocket.OPEN||ws.readyState===WebSocket.CONNECTING))return;
-
-  closeSocket();
-  showRemote();
-  setStatus('Connecting…');
-  el('deviceName').textContent=creds.deviceName||'Newline';
-
+async function refreshStatus(){
+  if(statusBusy||!validCreds(creds)||document.visibilityState==='hidden')return;
+  statusBusy=true;
   try{
-    ws=new WebSocket(RELAY_WS+'?deviceId='+encodeURIComponent(creds.deviceId));
-  }catch(e){
-    setStatus('Relay unavailable','bad');
-    scheduleReconnect();
-    return;
-  }
-
-  ws.onopen=()=>{
-    reconnectDelay=700;
-    ws.send(JSON.stringify({
-      type:'auth',
-      role:'phone',
+    const r=await api('/api/phone-status',{
+      deviceId:creds.deviceId,
       token:creds.token
-    }));
-  };
+    },8000);
 
-  ws.onmessage=event=>{
-    let m;
-    try{m=JSON.parse(event.data)}catch(e){return}
-
-    if(m.type==='auth-ok'&&m.role==='phone'){
-      wsAuthed=true;
-      showRemote();
-      el('deviceName').textContent=m.deviceName||creds.deviceName||'Newline';
-      setStatus(m.laptopOnline?'Laptop online':'Laptop offline',m.laptopOnline?'on':'bad');
-      el('msg').textContent=m.laptopOnline?'Ready':'Laptop offline';
-      clearInterval(pingTimer);
-      pingTimer=setInterval(()=>{
-        if(ws&&ws.readyState===WebSocket.OPEN){
-          try{ws.send(JSON.stringify({type:'ping'}))}catch(e){}
-        }
-      },20000);
-      return;
-    }
-
-    if(m.type==='auth-error'){
-      wsAuthed=false;
-      if(/phone/i.test(String(m.message||''))){
+    if(!r||!r.ok){
+      if(r&&r.unauthorized){
         clearCreds();
-        closeSocket();
         showPair();
-        el('pairMsg').textContent='This phone needs to be paired with the realtime relay.';
-      }else{
-        setStatus('Authentication failed','bad');
-        el('msg').textContent=m.message||'Authentication failed';
+        el('pairMsg').textContent='This phone needs to be paired again.';
+        return;
       }
+      setStatus('Connecting…');
       return;
     }
 
-    if(m.type==='status'){
-      el('deviceName').textContent=m.deviceName||creds.deviceName||'Newline';
-      setStatus(m.laptopOnline?'Laptop online':'Laptop offline',m.laptopOnline?'on':'bad');
-      return;
+    showRemote();
+    el('deviceName').textContent=r.deviceName||creds.deviceName||'Newline';
+    setStatus(r.laptopOnline?'Laptop online':'Laptop waking…',r.laptopOnline?'on':'idle');
+    if(el('msg').textContent==='Laptop offline'||el('msg').textContent==='Paired — checking laptop…'){
+      el('msg').textContent=r.laptopOnline?'Ready':'Waiting for laptop…';
     }
+  }catch(e){
+    setStatus('Connecting…');
+  }finally{
+    statusBusy=false;
+  }
+}
 
-    if(m.type==='command-accepted'){
-      const p=pending.get(String(m.requestId||''));
-      if(p){
-        p.acceptedAt=Date.now();
-        p.queuedAt=Number(m.queuedAt||0);
-        el('msg').textContent=p.label+' — sent';
-      }
-      return;
-    }
-
-    if(m.type==='command-error'){
-      const key=String(m.requestId||'');
-      const p=pending.get(key);
-      if(p){
-        pending.delete(key);
-        el('msg').textContent=m.message||'Command failed';
-        flashButton(p.btn,'errflash');
-      }else{
-        el('msg').textContent=m.message||'Command failed';
-      }
-      return;
-    }
-
-    if(m.type==='ack'){
-      const key=String(m.requestId||'');
-      const p=pending.get(key);
-      if(!p)return;
-      pending.delete(key);
-
-      const totalMs=Date.now()-p.tapStarted;
-      const acceptedMs=p.acceptedAt?Math.max(0,p.acceptedAt-p.tapStarted):0;
-      const boardMs=Math.max(0,Number(m.boardMs||0));
-      const realtimeMs=Math.max(0,Number(m.realtimeMs||0));
-
-      const sample={
-        totalMs,
-        acceptedMs,
-        realtimeMs,
-        boardMs,
-        at:Date.now()
-      };
-      rememberLatency(sample);
-      showLatency(sample);
-
-      if(m.ok){
-        el('msg').textContent=(m.message||'Done')+' · '+totalMs+' ms';
-        flashButton(p.btn,'okflash');
-      }else{
-        el('msg').textContent='Board error: '+(m.message||'Command failed');
-        flashButton(p.btn,'errflash');
-      }
-      return;
-    }
-
-    if(m.type==='revoked'){
-      clearCreds();
-      closeSocket();
-      showPair();
-      el('pairMsg').textContent='This phone was revoked. Pair it again to continue.';
-    }
-  };
-
-  ws.onerror=()=>{
-    if(!wsAuthed)setStatus('Connecting…');
-  };
-
-  ws.onclose=()=>{
-    wsAuthed=false;
-    clearInterval(pingTimer);
-    pingTimer=null;
-    if(validCreds(creds)){
-      setStatus('Reconnecting…');
-      scheduleReconnect();
-    }
-  };
+function startStatusLoop(){
+  clearInterval(statusTimer);
+  refreshStatus();
+  statusTimer=setInterval(refreshStatus,10000);
 }
 
 const COMMAND_LABELS={
@@ -432,21 +289,9 @@ function showLatency(sample){
   const avg=averageTotal();
   el('latency').textContent=
     'Tap→confirmed '+Number(sample.totalMs||0)+' ms'+
-    ' · relay accepted '+Number(sample.acceptedMs||0)+
-    ' · realtime '+Number(sample.realtimeMs||0)+
+    ' · cloud/relay '+Number(sample.realtimeMs||0)+
     ' · board '+Number(sample.boardMs||0)+
     (avg?' · avg '+avg+' ms ('+latencySamples().length+')':'');
-}
-
-async function waitForReady(maxMs=2200){
-  if(wsAuthed&&ws&&ws.readyState===WebSocket.OPEN)return true;
-  connectRealtime(false);
-  const start=Date.now();
-  while(Date.now()-start<maxMs){
-    if(wsAuthed&&ws&&ws.readyState===WebSocket.OPEN)return true;
-    await new Promise(r=>setTimeout(r,50));
-  }
-  return false;
 }
 
 async function sendRemoteCommand(command,btn){
@@ -457,46 +302,53 @@ async function sendRemoteCommand(command,btn){
 
   const label=COMMAND_LABELS[command]||'Command';
   const tapStarted=Date.now();
-  el('msg').textContent=label+' — sending…';
-  if(btn)btn.classList.add('working');
-
-  const ready=await waitForReady();
-  if(!ready){
-    el('msg').textContent='Realtime connection unavailable';
-    flashButton(btn,'errflash');
-    return;
-  }
-
   const requestId=(crypto.randomUUID?crypto.randomUUID():
     Date.now().toString(36)+'-'+Math.random().toString(36).slice(2));
 
-  pending.set(requestId,{
-    tapStarted,
-    acceptedAt:0,
-    queuedAt:0,
-    btn,
-    label
-  });
+  el('msg').textContent=label+' — sending…';
+  if(btn)btn.classList.add('working');
 
   try{
-    ws.send(JSON.stringify({
-      type:'command',
-      requestId,
-      command
-    }));
+    // Also marks this phone active, causing the laptop to stay in held long-poll mode.
+    const r=await api('/api/phone-command',{
+      deviceId:creds.deviceId,
+      token:creds.token,
+      command,
+      requestId
+    },10000);
 
-    setTimeout(()=>{
-      const p=pending.get(requestId);
-      if(p){
-        pending.delete(requestId);
-        el('msg').textContent=label+' — no confirmation received';
-        flashButton(btn,'errflash');
+    const totalMs=Date.now()-tapStarted;
+
+    if(!r||!r.ok){
+      if(r&&r.unauthorized){
+        clearCreds();
+        showPair();
+        el('pairMsg').textContent='This phone needs to be paired again.';
+        return;
       }
-    },5000);
+      el('msg').textContent=(r&&r.message)||'Command failed';
+      flashButton(btn,'errflash');
+      refreshStatus();
+      return;
+    }
+
+    const sample={
+      totalMs,
+      realtimeMs:Number(r.realtimeMs||0),
+      boardMs:Number(r.boardMs||0),
+      at:Date.now()
+    };
+    rememberLatency(sample);
+    showLatency(sample);
+
+    el('msg').textContent=(r.message||'Done')+' · '+totalMs+' ms';
+    flashButton(btn,'okflash');
+    setStatus('Laptop online','on');
   }catch(e){
-    pending.delete(requestId);
-    el('msg').textContent='Could not send command';
+    el('msg').textContent=(e&&e.name==='AbortError')?'Command timed out':'Could not reach relay';
     flashButton(btn,'errflash');
+  }finally{
+    if(btn)btn.classList.remove('working');
   }
 }
 
@@ -509,7 +361,9 @@ if(!configured()){
   if(saved){
     saveCreds(saved);
     showRemote();
-    connectRealtime(true);
+    setStatus('Connecting…');
+    el('deviceName').textContent=creds.deviceName||'Newline';
+    startStatusLoop();
   }else{
     showPair();
   }
@@ -517,12 +371,14 @@ if(!configured()){
 
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='visible'&&validCreds(creds)){
-    connectRealtime(true);
+    startStatusLoop();
+  }else if(document.visibilityState==='hidden'){
+    clearInterval(statusTimer);
   }
 });
 
 window.addEventListener('online',()=>{
-  if(validCreds(creds))connectRealtime(true);
+  if(validCreds(creds))startStatusLoop();
 });
 </script>
 </body>
