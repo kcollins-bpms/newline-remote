@@ -19,6 +19,8 @@
 
 .utilityBtn{width:100%;margin-top:14px;padding:12px 14px;border-radius:14px;border:1px solid #365f8d;background:#0d2138;color:#dcecff;font-size:14px;font-weight:750}.utilityBtn:active{transform:scale(.985)}
 .modal{display:none;position:fixed;inset:0;z-index:50;background:#020711cc;backdrop-filter:blur(9px);padding:max(18px,env(safe-area-inset-top)) 14px max(18px,env(safe-area-inset-bottom));overflow:auto}.modal.show{display:block}.modalCard{max-width:560px;margin:18px auto;background:#0b1727;border:1px solid #2c527d;border-radius:24px;padding:20px;box-shadow:0 24px 70px #000b}.modalTop{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.modalTitle{font-size:23px;font-weight:850;letter-spacing:-.025em}.closeBtn{width:36px;height:36px;border-radius:12px;border:1px solid #365f8d;background:#13263a;color:#dce8f4;font-size:20px}.section{margin-top:18px;padding-top:16px;border-top:1px solid #274565}.section:first-of-type{border-top:0;padding-top:0}.sectionTitle{font-size:13px;font-weight:800;color:#dce8f4;margin-bottom:8px}.setupText{font-size:12px;line-height:1.55;color:var(--muted)}.primarySmall,.secondarySmall,.dangerSmall{width:100%;margin-top:10px;padding:12px;border-radius:12px;font-size:13px;font-weight:800}.primarySmall{border:1px solid #5ea9ff;background:#1f69bb;color:#fff}.secondarySmall{border:1px solid #365f8d;background:#13263a;color:#e8f1fa}.dangerSmall{border:1px solid #864052;background:#341723;color:#ffd7dc}.copyGrid{display:grid;gap:9px;margin-top:10px}.copyRow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}.copyValue{min-width:0;border:1px solid #274d77;background:#071423;border-radius:11px;padding:10px 11px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:#dce8f4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.copyBtn{border:1px solid #4779aa;background:#143253;color:#eaf4ff;border-radius:10px;padding:9px 10px;font-size:11px;font-weight:800}.commandTable{display:grid;grid-template-columns:1fr 1fr;gap:7px 12px;margin-top:10px}.commandItem{padding:8px 9px;border:1px solid #244768;border-radius:10px;background:#081726;font-size:11px;color:#cbd9e7}.commandItem code{color:#7ec0ff}.shortcutMsg{min-height:18px;margin-top:9px;text-align:center;font-size:11px;color:#8fa8c2}.shortcutMsg.bad{color:#ff8c99}.shortcutMsg.good{color:#67e6ad}.stepList{margin:8px 0 0;padding-left:19px;color:#b8cadd;font-size:12px;line-height:1.55}.stepList li{margin:7px 0}.monoInline{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#8fc9ff}.securityNote{margin-top:11px;padding:10px 11px;border-radius:11px;background:#0c2137;border:1px solid #2e557e;font-size:11px;line-height:1.5;color:#9fb3ca}
+
+.shortcutRows{display:grid;gap:9px;margin-top:10px}.shortcutRow{display:grid;grid-template-columns:1fr auto auto;gap:7px;align-items:center;padding:9px 10px;border:1px solid #244768;border-radius:11px;background:#081726}.shortcutName{font-size:12px;font-weight:800;color:#dce8f4}.copyBtn.copied{border-color:#4aa77d;background:#123c31;color:#aef4d0}.testBtn{border:1px solid #365f8d;background:#102942;color:#dce8f4;border-radius:10px;padding:9px 10px;font-size:11px;font-weight:800}.testBtn.testing{opacity:.65}.shortcutHint{font-size:11px;line-height:1.5;color:#8fa8c2;margin-top:9px}.shortcutDivider{height:1px;background:#274565;margin:14px 0}.shortcutReady{display:inline-flex;align-items:center;gap:7px;font-size:11px;color:#67e6ad;margin-top:8px}.shortcutReady:before{content:"";width:7px;height:7px;border-radius:50%;background:#67e6ad;box-shadow:0 0 10px #67e6ad88}
 </style>
 </head>
 <body>
@@ -79,46 +81,44 @@
       </div>
 
       <div id="shortcutNoKey" class="section">
-        <div class="sectionTitle">Create a Shortcut key</div>
-        <div class="setupText">This creates a separate command-only credential for Apple Shortcuts. It does not expose your Phone Remote token or the classroom laptop secret.</div>
-        <button id="createShortcutKeyBtn" class="primarySmall" onclick="createShortcutKey()">Create secure Shortcut key</button>
+        <div class="sectionTitle">Create secure Shortcut links</div>
+        <div class="setupText">Newline Remote will create six separate secure links — one for each command. Each link can perform only its own action, so there is no all-powerful Shortcut key to paste into a JSON request.</div>
+        <button id="createShortcutKeyBtn" class="primarySmall" onclick="createShortcutLinks()">Create secure Shortcut links</button>
       </div>
 
       <div id="shortcutMsg" class="shortcutMsg"></div>
 
       <div id="shortcutHasKey" class="section" style="display:none">
-        <div class="sectionTitle">Your Shortcut connection</div>
-        <div class="copyGrid">
-          <div class="copyRow"><div id="shortcutEndpointView" class="copyValue"></div><button class="copyBtn" onclick="copyShortcutValue('endpoint')">Copy URL</button></div>
-          <div class="copyRow"><div id="shortcutDeviceView" class="copyValue"></div><button class="copyBtn" onclick="copyShortcutValue('device')">Copy ID</button></div>
-          <div class="copyRow"><div id="shortcutTokenView" class="copyValue"></div><button class="copyBtn" onclick="copyShortcutValue('token')">Copy key</button></div>
+        <div class="sectionTitle">Your Shortcut links</div>
+        <div class="setupText">Copy the link for the command you are building. The full credential stays inside that link.</div>
+        <div class="shortcutRows">
+          <div class="shortcutRow"><div class="shortcutName">Home</div><button class="copyBtn" onclick="copyShortcutLink('home',this)">Copy URL</button><button class="testBtn" onclick="testShortcutLink('home',this)">Test</button></div>
+          <div class="shortcutRow"><div class="shortcutName">Vivi</div><button class="copyBtn" onclick="copyShortcutLink('vivi',this)">Copy URL</button><button class="testBtn" onclick="testShortcutLink('vivi',this)">Test</button></div>
+          <div class="shortcutRow"><div class="shortcutName">Freeze</div><button class="copyBtn" onclick="copyShortcutLink('freeze',this)">Copy URL</button><button class="testBtn" onclick="testShortcutLink('freeze',this)">Test</button></div>
+          <div class="shortcutRow"><div class="shortcutName">Volume −</div><button class="copyBtn" onclick="copyShortcutLink('volDown',this)">Copy URL</button><button class="testBtn" onclick="testShortcutLink('volDown',this)">Test</button></div>
+          <div class="shortcutRow"><div class="shortcutName">Mute</div><button class="copyBtn" onclick="copyShortcutLink('mute',this)">Copy URL</button><button class="testBtn" onclick="testShortcutLink('mute',this)">Test</button></div>
+          <div class="shortcutRow"><div class="shortcutName">Volume +</div><button class="copyBtn" onclick="copyShortcutLink('volUp',this)">Copy URL</button><button class="testBtn" onclick="testShortcutLink('volUp',this)">Test</button></div>
         </div>
-        <button class="secondarySmall" onclick="copyShortcutSetupBundle()">Copy all setup values</button>
+        <div class="shortcutHint">The <b>Test</b> button uses the exact same secure URL the Apple Shortcut will use. If Test works here, the relay, credential, laptop, and board path are all confirmed.</div>
       </div>
 
       <div id="shortcutInstructions" class="section" style="display:none">
-        <div class="sectionTitle">Build the first shortcut</div>
+        <div class="sectionTitle">Build Newline Home</div>
         <ol class="stepList">
-          <li>Open <b>Shortcuts</b>, tap <b>+</b>, add a <b>URL</b> action, and paste the copied URL.</li>
-          <li>Add <b>Get Contents of URL</b>. Set <b>Method</b> to <b>POST</b> and <b>Request Body</b> to <b>JSON</b>.</li>
-          <li>Add these JSON fields: <span class="monoInline">deviceId</span> = your copied ID, <span class="monoInline">token</span> = your copied key, and <span class="monoInline">command</span> = <span class="monoInline">home</span>.</li>
-          <li>Name it <b>Newline Home</b>. Duplicate it five times and change only the <span class="monoInline">command</span> value.</li>
+          <li>Tap <b>Copy URL</b> next to <b>Home</b>.</li>
+          <li>Open <b>Shortcuts</b>, create a new shortcut, add a <b>URL</b> action, and paste.</li>
+          <li>Add <b>Get Contents of URL</b> underneath it and set <b>Method</b> to <b>POST</b>. No body fields are needed; if Request Body appears, leave it empty.</li>
+          <li>Name it <b>Newline Home</b> and run it. That is the entire shortcut.</li>
+          <li>Duplicate it for the other five controls and replace only the URL with the matching copied URL above.</li>
         </ol>
-        <div class="commandTable">
-          <div class="commandItem">Home → <code>home</code></div>
-          <div class="commandItem">Vivi → <code>vivi</code></div>
-          <div class="commandItem">Freeze → <code>freeze</code></div>
-          <div class="commandItem">Volume − → <code>volDown</code></div>
-          <div class="commandItem">Mute → <code>mute</code></div>
-          <div class="commandItem">Volume + → <code>volUp</code></div>
-        </div>
-        <div class="securityNote">The key can only send those six commands to this classroom. It cannot pair phones, change settings, reveal the laptop secret, or control another classroom.</div>
-        <button class="dangerSmall" onclick="revokeShortcutKey()">Revoke this Shortcut key</button>
+        <button class="secondarySmall" onclick="openShortcutEditor()">Open Shortcuts</button>
+        <div class="securityNote">Each URL contains a random 256-bit credential bound to this classroom, this paired phone, and exactly one approved command. Revoking the links disables all six immediately.</div>
+        <button class="dangerSmall" onclick="revokeShortcutLinks()">Revoke these Shortcut links</button>
       </div>
     </div>
   </div>
 
-  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span style="opacity:.7">Phone app v60</span></div>
+  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span style="opacity:.7">Phone app v61</span></div>
 </div>
 
 <script>
@@ -134,8 +134,8 @@ const K_TOKEN='newlineRealtimeTokenV54';
 const K_NAME='newlineRealtimeNameV54';
 const LATENCY_KEY='newlineHttpsLatencyV59';
 const K_SHORTCUT_ID='newlineShortcutKeyIdV60';
-const K_SHORTCUT_TOKEN='newlineShortcutTokenV60';
-const SHORTCUT_ENDPOINT=RELAY_BASE+'/api/shortcut-command';
+const K_SHORTCUT_TOKEN='newlineShortcutTokenV60'; // legacy v60 key; removed after successful migration
+const K_SHORTCUT_SET='newlineShortcutLinkSetV61';
 
 const el=id=>document.getElementById(id);
 let creds={deviceId:'',token:'',deviceName:''};
@@ -411,42 +411,35 @@ async function sendRemoteCommand(command,btn){
 }
 
 
-let shortcutCred={keyId:'',token:''};
+let shortcutSet={setId:'',urls:{}};
+const SHORTCUT_COMMANDS=['home','vivi','freeze','volDown','mute','volUp'];
 
-function loadShortcutCred(){
+function loadShortcutSet(){
   try{
-    const c={
-      keyId:localStorage.getItem(K_SHORTCUT_ID)||'',
-      token:localStorage.getItem(K_SHORTCUT_TOKEN)||''
-    };
-    return (c.keyId&&c.token.length>=32)?c:null;
+    const raw=localStorage.getItem(K_SHORTCUT_SET);
+    if(!raw)return null;
+    const c=JSON.parse(raw);
+    if(!c||!c.setId||!c.urls)return null;
+    for(const cmd of SHORTCUT_COMMANDS){
+      if(typeof c.urls[cmd]!=='string'||!c.urls[cmd].startsWith('https://'))return null;
+    }
+    return c;
   }catch(e){return null}
 }
 
-function saveShortcutCred(c){
-  shortcutCred=c||{keyId:'',token:''};
+function saveShortcutSet(c){
+  shortcutSet=c||{setId:'',urls:{}};
   try{
-    if(c){
-      localStorage.setItem(K_SHORTCUT_ID,c.keyId);
-      localStorage.setItem(K_SHORTCUT_TOKEN,c.token);
-    }else{
-      localStorage.removeItem(K_SHORTCUT_ID);
-      localStorage.removeItem(K_SHORTCUT_TOKEN);
-    }
+    if(c)localStorage.setItem(K_SHORTCUT_SET,JSON.stringify(c));
+    else localStorage.removeItem(K_SHORTCUT_SET);
   }catch(e){}
 }
 
-function renderShortcutCredential(){
-  const has=!!(shortcutCred&&shortcutCred.keyId&&shortcutCred.token);
+function renderShortcutLinks(){
+  const has=!!(shortcutSet&&shortcutSet.setId&&shortcutSet.urls&&SHORTCUT_COMMANDS.every(c=>shortcutSet.urls[c]));
   el('shortcutNoKey').style.display=has?'none':'block';
   el('shortcutHasKey').style.display=has?'block':'none';
   el('shortcutInstructions').style.display=has?'block':'none';
-  if(has){
-    el('shortcutEndpointView').textContent=SHORTCUT_ENDPOINT;
-    el('shortcutDeviceView').textContent=creds.deviceId;
-    const t=shortcutCred.token;
-    el('shortcutTokenView').textContent='••••••••••••••••••••••••••••••••  '+t.slice(-8);
-  }
 }
 
 function setShortcutMsg(message,kind=''){
@@ -456,34 +449,48 @@ function setShortcutMsg(message,kind=''){
   node.className='shortcutMsg'+(kind?' '+kind:'');
 }
 
+function resetCopyButtons(){
+  document.querySelectorAll('#shortcutModal .copyBtn').forEach(btn=>{
+    if(btn._copyResetTimer){clearTimeout(btn._copyResetTimer);btn._copyResetTimer=null}
+    btn.textContent=btn.dataset.originalText||'Copy URL';
+    btn.classList.remove('copied');
+  });
+}
+
 async function openShortcutSetup(){
   if(!validCreds(creds)){showPair();return}
   el('shortcutModal').classList.add('show');
   el('shortcutModal').setAttribute('aria-hidden','false');
-  const saved=loadShortcutCred();
+  resetCopyButtons();
+  const saved=loadShortcutSet();
   if(!saved){
-    saveShortcutCred(null);
-    renderShortcutCredential();
+    saveShortcutSet(null);
+    renderShortcutLinks();
+    setShortcutMsg('');
     return;
   }
-  saveShortcutCred(saved);
-  renderShortcutCredential();
-  setShortcutMsg('Checking Shortcut key…');
+  saveShortcutSet(saved);
+  renderShortcutLinks();
+  setShortcutMsg('Checking secure Shortcut links…');
   try{
-    const r=await api('/api/shortcut-status',{deviceId:creds.deviceId,token:saved.token},8000);
+    const r=await api('/api/shortcut-links-status',{
+      deviceId:creds.deviceId,
+      phoneToken:creds.token,
+      setId:saved.setId
+    },8000);
     if(!r||!r.ok){
       if(r&&r.unauthorized){
-        saveShortcutCred(null);
-        renderShortcutCredential();
+        saveShortcutSet(null);
+        renderShortcutLinks();
         setShortcutMsg('');
       }else{
-        setShortcutMsg((r&&r.message)||'Could not verify Shortcut key','bad');
+        setShortcutMsg((r&&r.message)||'Could not verify Shortcut links','bad');
       }
       return;
     }
-    setShortcutMsg(r.laptopOnline?'Shortcut key ready · laptop online':'Shortcut key ready · laptop currently offline',r.laptopOnline?'good':'');
+    setShortcutMsg(r.laptopOnline?'Shortcut links ready · laptop online':'Shortcut links ready · laptop currently offline',r.laptopOnline?'good':'');
   }catch(e){
-    setShortcutMsg('Could not verify the key right now','bad');
+    setShortcutMsg('Could not verify the Shortcut links right now','bad');
   }
 }
 
@@ -492,31 +499,44 @@ function closeShortcutSetup(){
   el('shortcutModal').setAttribute('aria-hidden','true');
 }
 
-async function createShortcutKey(){
+async function removeLegacyShortcutKey(){
+  try{
+    const keyId=localStorage.getItem(K_SHORTCUT_ID)||'';
+    if(keyId){
+      await api('/api/shortcut-revoke',{deviceId:creds.deviceId,phoneToken:creds.token,keyId},5000);
+    }
+  }catch(e){}
+  try{
+    localStorage.removeItem(K_SHORTCUT_ID);
+    localStorage.removeItem(K_SHORTCUT_TOKEN);
+  }catch(e){}
+}
+
+async function createShortcutLinks(){
   const btn=el('createShortcutKeyBtn');
   btn.disabled=true;
   btn.textContent='Creating…';
   try{
-    const r=await api('/api/shortcut-create',{
+    const r=await api('/api/shortcut-links-create',{
       deviceId:creds.deviceId,
       phoneToken:creds.token,
       name:'iPhone Shortcuts'
     },10000);
     if(!r||!r.ok){
-      const message=(r&&r.message)||'Could not create Shortcut key';
-      if(message.toLowerCase().includes('unknown api route')){
-        throw new Error('Cloudflare relay v7 must be deployed first.');
-      }
+      const message=(r&&r.message)||'Could not create Shortcut links';
+      if(message.toLowerCase().includes('unknown api route'))throw new Error('Cloudflare relay v8 must be deployed first.');
       throw new Error(message);
     }
-    saveShortcutCred({keyId:r.keyId,token:r.token});
-    renderShortcutCredential();
-    setShortcutMsg('Secure Shortcut key created','good');
+    if(!r.setId||!r.urls||!SHORTCUT_COMMANDS.every(c=>typeof r.urls[c]==='string'))throw new Error('Relay returned incomplete Shortcut links.');
+    saveShortcutSet({setId:r.setId,urls:r.urls});
+    await removeLegacyShortcutKey();
+    renderShortcutLinks();
+    setShortcutMsg('Secure Shortcut links created','good');
   }catch(e){
-    setShortcutMsg((e&&e.message)||'Could not create Shortcut key','bad');
+    setShortcutMsg((e&&e.message)||'Could not create Shortcut links','bad');
   }finally{
     btn.disabled=false;
-    btn.textContent='Create secure Shortcut key';
+    btn.textContent='Create secure Shortcut links';
   }
 }
 
@@ -536,42 +556,61 @@ async function clipboardWrite(text){
   }
 }
 
-async function copyShortcutValue(which){
-  if(!shortcutCred||!shortcutCred.token)return;
-  const value=which==='endpoint'?SHORTCUT_ENDPOINT:which==='device'?creds.deviceId:shortcutCred.token;
-  const ok=await clipboardWrite(value);
-  setShortcutMsg(ok?'Copied':'Could not copy',ok?'good':'bad');
+async function copyShortcutLink(command,button){
+  const url=shortcutSet&&shortcutSet.urls?shortcutSet.urls[command]:'';
+  if(!url)return;
+  const ok=await clipboardWrite(url);
+  if(!button)return;
+  if(!button.dataset.originalText)button.dataset.originalText=button.textContent;
+  if(button._copyResetTimer)clearTimeout(button._copyResetTimer);
+  button.textContent=ok?'Copied ✓':'Copy failed';
+  button.classList.toggle('copied',ok);
+  button._copyResetTimer=setTimeout(()=>{
+    button.textContent=button.dataset.originalText||'Copy URL';
+    button.classList.remove('copied');
+    button._copyResetTimer=null;
+  },1400);
 }
 
-async function copyShortcutSetupBundle(){
-  if(!shortcutCred||!shortcutCred.token)return;
-  const text=[
-    'Newline Apple Shortcuts',
-    'URL: '+SHORTCUT_ENDPOINT,
-    'deviceId: '+creds.deviceId,
-    'token: '+shortcutCred.token,
-    '',
-    'Commands: home, vivi, freeze, volDown, mute, volUp'
-  ].join('\n');
-  const ok=await clipboardWrite(text);
-  setShortcutMsg(ok?'All setup values copied':'Could not copy',ok?'good':'bad');
+async function testShortcutLink(command,button){
+  const url=shortcutSet&&shortcutSet.urls?shortcutSet.urls[command]:'';
+  if(!url)return;
+  const old=button?button.textContent:'';
+  if(button){button.disabled=true;button.classList.add('testing');button.textContent='Testing…'}
+  setShortcutMsg('Sending '+command+' through the Shortcut link…');
+  const started=performance.now();
+  try{
+    const resp=await fetch(url,{method:'POST',cache:'no-store'});
+    let r={};
+    try{r=await resp.json()}catch(e){}
+    if(!resp.ok||!r.ok)throw new Error((r&&r.message)||('Shortcut test failed ('+resp.status+')'));
+    setShortcutMsg('Shortcut link works · '+Math.max(1,Math.round(performance.now()-started))+' ms','good');
+  }catch(e){
+    setShortcutMsg((e&&e.message)||'Shortcut link test failed','bad');
+  }finally{
+    if(button){button.disabled=false;button.classList.remove('testing');button.textContent=old||'Test'}
+  }
 }
 
-async function revokeShortcutKey(){
-  if(!shortcutCred||!shortcutCred.keyId)return;
+function openShortcutEditor(){
+  window.location.href='shortcuts://create-shortcut';
+}
+
+async function revokeShortcutLinks(){
+  if(!shortcutSet||!shortcutSet.setId)return;
   setShortcutMsg('Revoking…');
   try{
-    const r=await api('/api/shortcut-revoke',{
+    const r=await api('/api/shortcut-links-revoke',{
       deviceId:creds.deviceId,
       phoneToken:creds.token,
-      keyId:shortcutCred.keyId
+      setId:shortcutSet.setId
     },8000);
-    if(!r||!r.ok)throw new Error((r&&r.message)||'Could not revoke Shortcut key');
-    saveShortcutCred(null);
-    renderShortcutCredential();
-    setShortcutMsg('');
+    if(!r||!r.ok)throw new Error((r&&r.message)||'Could not revoke Shortcut links');
+    saveShortcutSet(null);
+    renderShortcutLinks();
+    setShortcutMsg('Shortcut links revoked','good');
   }catch(e){
-    setShortcutMsg((e&&e.message)||'Could not revoke Shortcut key','bad');
+    setShortcutMsg((e&&e.message)||'Could not revoke Shortcut links','bad');
   }
 }
 
