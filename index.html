@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#07101d">
 <meta name="referrer" content="no-referrer">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
@@ -12,9 +12,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <title>Newline Remote</title>
 <style>
-:root{color-scheme:dark;--bg:#07101d;--card:#0c1a2c;--line:#2c527d;--blue:#62adff;--text:#f4f8ff;--muted:#9fb3ca;--red:#ff7181;--green:#55dca3}
-*{box-sizing:border-box}html,body{min-height:100%}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -10%,#173c66 0,#07101d 42%,#050a11 100%);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);padding:max(20px,env(safe-area-inset-top)) 18px max(24px,env(safe-area-inset-bottom));-webkit-tap-highlight-color:transparent}
-.wrap{max-width:520px;margin:auto}.top{display:flex;align-items:center;justify-content:space-between;margin:3px 2px 20px}.title{font-size:28px;font-weight:850;letter-spacing:-.035em}.sub{font-size:12px;color:var(--muted);margin-top:3px}.status{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted)}.dot{width:11px;height:11px;border-radius:50%;background:#657386}.dot.on{background:var(--green);box-shadow:0 0 15px #55dca388}.dot.bad{background:var(--red)}
+:root{color-scheme:dark;--bg:#07101d;--card:#0c1a2c;--line:#2c527d;--blue:#62adff;--text:#f4f8ff;--muted:#9fb3ca;--red:#ff7181;--green:#55dca3;--background-dim:.48}
+*{box-sizing:border-box}html{min-height:100%;background:#07101d}html,body{min-height:100%}body{margin:0;min-height:100vh;min-height:100dvh;background:#07101d;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);padding:calc(env(safe-area-inset-top) + 18px) 18px max(24px,env(safe-area-inset-bottom));-webkit-tap-highlight-color:transparent;position:relative;isolation:isolate}
+.wrap{max-width:520px;margin:auto;position:relative;z-index:1}.top{display:flex;align-items:center;justify-content:space-between;margin:3px 2px 20px;gap:12px}.title{font-size:28px;font-weight:850;letter-spacing:-.035em}.sub{font-size:12px;color:var(--muted);margin-top:3px}.topRight{display:flex;align-items:center;gap:10px}.status{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted)}.dot{width:11px;height:11px;border-radius:50%;background:#657386}.dot.on{background:var(--green);box-shadow:0 0 15px #55dca388}.dot.bad{background:var(--red)}.settingsBtn{width:38px;height:38px;border-radius:13px;border:1px solid #365f8d;background:#0d2138;color:#dcecff;font-size:18px;display:grid;place-items:center;padding:0;box-shadow:0 8px 22px #0004}.settingsBtn:active{transform:scale(.96);background:#15304f}
 .card{background:#0b1727e8;border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 18px 55px #0008;backdrop-filter:blur(14px)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.btn{min-height:116px;border-radius:20px;border:1px solid #365f8d;background:linear-gradient(180deg,#122b49,#0b1c30);color:#f7fbff;font-size:22px;font-weight:850;box-shadow:inset 0 1px #ffffff12,0 12px 30px #0005;touch-action:manipulation}.btn:active{transform:scale(.975);background:#17375b}.btn.working{transform:scale(.975);box-shadow:inset 0 0 0 2px #62adff,0 0 0 3px #62adff33,0 12px 30px #0005}.btn.okflash{box-shadow:inset 0 0 0 2px #55dca3,0 0 0 3px #55dca333,0 12px 30px #0005}.btn.errflash{box-shadow:inset 0 0 0 2px #ff7181,0 0 0 3px #ff718133,0 12px 30px #0005}.btn.wide{grid-column:1/-1;min-height:92px}.freeze{font-size:20px}.volume{margin-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.volume .btn{min-height:78px;font-size:30px;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}.volume #volumeDownBtn,.volume #volumeUpBtn{touch-action:none}.volume .mute{font-size:16px}.msg{margin-top:13px;min-height:20px;text-align:center;color:var(--muted);font-size:12px}.latency{margin-top:2px;min-height:30px;text-align:center;color:#7891aa;font-size:10.5px;line-height:1.45}.pair{display:none}.pair.show{display:block}.remote.hide{display:none}label{display:block;font-size:12px;color:var(--muted);margin:12px 2px 7px}input{width:100%;font:inherit;font-size:18px;padding:14px;border-radius:13px;border:1px solid #365f8d;background:#071423;color:#fff;outline:none}.pairBtn{width:100%;margin-top:13px;padding:14px;border-radius:13px;border:1px solid #5ea9ff;background:#1f69bb;color:white;font-size:17px;font-weight:800}.help{font-size:12px;line-height:1.5;color:var(--muted);margin-top:14px}.small{font-size:11px;color:#7f96af;text-align:center;margin-top:18px}.warn{color:#ffd59c}
 
 .utilityBtn{width:100%;margin-top:14px;padding:12px 14px;border-radius:14px;border:1px solid #365f8d;background:#0d2138;color:#dcecff;font-size:14px;font-weight:750}.utilityBtn:active{transform:scale(.985)}
@@ -23,13 +23,30 @@
 .shortcutRows{display:grid;gap:9px;margin-top:10px}.shortcutRow{display:grid;grid-template-columns:1fr auto auto;gap:7px;align-items:center;padding:9px 10px;border:1px solid #244768;border-radius:11px;background:#081726}.shortcutName{font-size:12px;font-weight:800;color:#dce8f4}.copyBtn.copied{border-color:#4aa77d;background:#123c31;color:#aef4d0}.testBtn{border:1px solid #365f8d;background:#102942;color:#dce8f4;border-radius:10px;padding:9px 10px;font-size:11px;font-weight:800}.testBtn.testing{opacity:.65}.shortcutHint{font-size:11px;line-height:1.5;color:#8fa8c2;margin-top:9px}.shortcutDivider{height:1px;background:#274565;margin:14px 0}.shortcutReady{display:inline-flex;align-items:center;gap:7px;font-size:11px;color:#67e6ad;margin-top:8px}.shortcutReady:before{content:"";width:7px;height:7px;border-radius:50%;background:#67e6ad;box-shadow:0 0 10px #67e6ad88}
 
 .updateCard{display:none;margin:0 0 14px;padding:14px 15px;border-radius:16px;border:1px solid #3f79ad;background:linear-gradient(180deg,#12365a,#0b253f);box-shadow:0 12px 30px #0005}.updateCard.show{display:flex;align-items:center;justify-content:space-between;gap:12px}.updateCopy{min-width:0}.updateTitle{font-size:14px;font-weight:850;color:#f4f8ff}.updateText{font-size:11px;line-height:1.4;color:#a9bfd5;margin-top:3px}.updateNowBtn{flex:0 0 auto;border:1px solid #78bcff;background:#2374c7;color:#fff;border-radius:11px;padding:10px 12px;font-size:12px;font-weight:850}.updateNowBtn:disabled{opacity:.65}.updateTools{margin-top:11px;text-align:center}.updateCheckBtn{border:0;background:transparent;color:#7593b2;font-size:11px;padding:7px 10px}.updateCheckBtn:active{color:#a9c8e8}.updateCheckBtn:disabled{opacity:.6}.updateStatus{min-height:14px;font-size:10px;color:#7189a2;text-align:center}.updateStatus.good{color:#67dba8}.updateStatus.bad{color:#ff8996}
+
+/* iOS 27 can extend the status-bar glass/blur farther into standalone PWAs than the safe-area inset reports.
+   Keep a small opaque guard above the actual app content and use an opaque status bar so the title never sits under that blur. */
+.topSafeGuard{position:fixed;left:0;right:0;top:0;height:calc(env(safe-area-inset-top) + 10px);background:#07101d;z-index:45;pointer-events:none}
+.appBackground{position:fixed;inset:0;z-index:-3;background:radial-gradient(circle at 50% -10%,#173c66 0,#07101d 42%,#050a11 100%);background-position:center;background-size:cover;background-repeat:no-repeat;transform:translateZ(0)}
+.appBackgroundShade{position:fixed;inset:0;z-index:-2;background:rgba(3,8,15,0);pointer-events:none}
+body.customBackground .appBackgroundShade{background:rgba(3,8,15,var(--background-dim))}
+body.customBackground .card{background:#0b1727d5}
+.quickVolume{margin-top:10px;display:grid;grid-template-columns:1fr auto 1fr;gap:9px;align-items:center}.quickVolBtn{min-height:48px;border-radius:14px;border:1px solid #315a84;background:#0d2138;color:#eaf4ff;font-size:18px;font-weight:850;box-shadow:inset 0 1px #ffffff0d}.quickVolBtn:active{transform:scale(.975);background:#163554}.quickVolBtn.working{box-shadow:inset 0 0 0 2px #62adff}.quickVolBtn.okflash{box-shadow:inset 0 0 0 2px #55dca3}.quickVolBtn.errflash{box-shadow:inset 0 0 0 2px #ff7181}.quickVolLabel{font-size:10px;color:#7891aa;text-align:center;min-width:68px;line-height:1.25}.quickVolLabel strong{display:block;color:#b7cbe0;font-size:11px}
+.settingRow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0}.settingText{min-width:0}.settingName{font-size:13px;font-weight:800;color:#e5f0fb}.settingDesc{font-size:11px;line-height:1.45;color:#8fa8c2;margin-top:3px}.stepper{display:grid;grid-template-columns:36px 48px 36px;gap:6px;align-items:center}.stepper button{height:36px;border-radius:10px;border:1px solid #365f8d;background:#102942;color:#eef7ff;font-size:19px;font-weight:850}.stepper input{height:36px;padding:5px 4px;text-align:center;font-size:15px;font-weight:850;border-radius:10px;-moz-appearance:textfield}.stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}.appearanceButtons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.appearanceButtons button,.appearanceButtons label{margin:0;width:100%;display:flex;align-items:center;justify-content:center;padding:11px;border-radius:12px;font-size:12px;font-weight:800;cursor:pointer}.fileButton{border:1px solid #365f8d;background:#13263a;color:#e8f1fa}.bgUrlRow{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:9px}.bgUrlRow input{font-size:13px;padding:11px}.bgUrlRow button{border:1px solid #4779aa;background:#143253;color:#eaf4ff;border-radius:11px;padding:0 12px;font-size:12px;font-weight:800}.dimSetting{margin-top:13px}.dimLine{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#9fb3ca;margin-bottom:7px}.dimSetting input[type=range]{padding:0;border:0;background:transparent;height:26px}.settingsShortcutBtn{width:100%;margin-top:10px;padding:12px;border-radius:12px;border:1px solid #365f8d;background:#13263a;color:#e8f1fa;font-size:13px;font-weight:800}.settingsMessage{min-height:16px;margin-top:8px;text-align:center;font-size:10.5px;color:#8fa8c2}.settingsMessage.good{color:#67e6ad}.settingsMessage.bad{color:#ff8c99}
+
 </style>
 </head>
 <body>
+<div class="topSafeGuard" aria-hidden="true"></div>
+<div id="appBackground" class="appBackground" aria-hidden="true"></div>
+<div id="appBackgroundShade" class="appBackgroundShade" aria-hidden="true"></div>
 <div class="wrap">
   <div class="top">
     <div><div class="title">Newline Remote</div><div id="deviceName" class="sub">Phone remote</div></div>
-    <div class="status"><span id="statusText">Not paired</span><span id="dot" class="dot"></span></div>
+    <div class="topRight">
+      <div class="status"><span id="statusText">Not paired</span><span id="dot" class="dot"></span></div>
+      <button class="settingsBtn" type="button" onclick="openSettings()" aria-label="Newline Remote settings">⚙</button>
+    </div>
   </div>
 
   <div id="updateCard" class="updateCard" role="status" aria-live="polite">
@@ -74,11 +91,67 @@
       <button class="btn mute" onclick="sendRemoteCommand('mute',this)">Mute</button>
       <button id="volumeUpBtn" class="btn" aria-label="Volume up. Tap once or hold to repeat.">+</button>
     </div>
+    <div class="quickVolume" aria-label="Quick volume adjustment">
+      <button id="quickVolumeDownBtn" class="quickVolBtn" type="button" onclick="sendVolumeJump('volDown',this)">−3</button>
+      <div class="quickVolLabel"><strong id="quickVolumeLabel">Quick ±3</strong><span>per tap</span></div>
+      <button id="quickVolumeUpBtn" class="quickVolBtn" type="button" onclick="sendVolumeJump('volUp',this)">+3</button>
+    </div>
     <div id="msg" class="msg">Ready</div>
     <div id="latency" class="latency">Realtime latency will appear after a command.</div>
-    <button class="utilityBtn" onclick="openShortcutSetup()">Apple Shortcuts / Widget Setup</button>
   </div>
 
+
+  <div id="settingsModal" class="modal" aria-hidden="true">
+    <div class="modalCard">
+      <div class="modalTop">
+        <div>
+          <div class="modalTitle">Settings</div>
+          <div class="sub" style="margin-top:5px">These preferences stay on this iPhone and do not affect another teacher's remote.</div>
+        </div>
+        <button class="closeBtn" onclick="closeSettings()" aria-label="Close settings">×</button>
+      </div>
+
+      <div class="section">
+        <div class="sectionTitle">Volume</div>
+        <div class="settingRow">
+          <div class="settingText">
+            <div class="settingName">Quick volume step</div>
+            <div class="settingDesc">Sets the two smaller volume buttons on the main remote. The large − / + buttons still move one step and support press-and-hold.</div>
+          </div>
+          <div class="stepper">
+            <button type="button" onclick="adjustVolumeJump(-1)" aria-label="Decrease quick volume step">−</button>
+            <input id="volumeJumpInput" type="number" inputmode="numeric" min="1" max="20" value="3" aria-label="Quick volume step" onchange="setVolumeJump(this.value)">
+            <button type="button" onclick="adjustVolumeJump(1)" aria-label="Increase quick volume step">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="sectionTitle">Background</div>
+        <div class="setupText">Choose an image from this device or use an HTTPS image URL. The image stays local to this phone; it does not change the laptop dashboard or anyone else's remote.</div>
+        <div class="appearanceButtons">
+          <label class="fileButton" for="backgroundFileInput">Choose image</label>
+          <button class="secondarySmall" type="button" onclick="clearCustomBackground()">Remove background</button>
+        </div>
+        <input id="backgroundFileInput" type="file" accept="image/*" hidden>
+        <div class="bgUrlRow">
+          <input id="backgroundUrlInput" type="url" inputmode="url" placeholder="Paste HTTPS image URL…">
+          <button type="button" onclick="applyBackgroundUrl()">Use URL</button>
+        </div>
+        <div class="dimSetting">
+          <div class="dimLine"><span>Background dim</span><strong id="backgroundDimValue">48%</strong></div>
+          <input id="backgroundDimRange" type="range" min="15" max="80" value="48" oninput="setBackgroundDim(this.value,false)" onchange="setBackgroundDim(this.value,true)">
+        </div>
+        <div id="settingsMessage" class="settingsMessage"></div>
+      </div>
+
+      <div class="section">
+        <div class="sectionTitle">Apple Shortcuts & Widget</div>
+        <div class="setupText">Manage the secure command links used by your Home Screen widget, Siri, NFC, Control Center, Action Button, Back Tap, or Apple Watch.</div>
+        <button class="settingsShortcutBtn" type="button" onclick="openShortcutSetupFromSettings()">Open Shortcut setup</button>
+      </div>
+    </div>
+  </div>
 
   <div id="shortcutModal" class="modal" aria-hidden="true">
     <div class="modalCard">
@@ -128,13 +201,13 @@
     </div>
   </div>
 
-  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span id="currentVersion" style="opacity:.7">Phone app v63</span>
+  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span id="currentVersion" style="opacity:.7">Phone app v65</span>
     <div class="updateTools"><button id="checkUpdateBtn" class="updateCheckBtn" onclick="manualCheckForUpdates()">Check for updates</button><div id="updateStatus" class="updateStatus"></div></div>
   </div>
 </div>
 
 <script>
-const APP_VERSION=63;
+const APP_VERSION=65;
 let swRegistration=null;
 let updateCheckBusy=false;
 let requestedUpdateReload=false;
@@ -225,7 +298,7 @@ async function updateAppNow(){
     const waiting=swRegistration.waiting;
     if(waiting)waiting.postMessage({type:'SKIP_WAITING'});
 
-    // New workers normally activate immediately in v63+, but give iOS a moment
+    // New workers normally activate immediately in v65+, but give iOS a moment
     // to switch controllers before navigating to the freshly cached shell.
     await new Promise(resolve=>setTimeout(resolve,500));
     location.replace('./?updated='+Date.now());
@@ -266,6 +339,11 @@ const LATENCY_KEY='newlineHttpsLatencyV59';
 const K_SHORTCUT_ID='newlineShortcutKeyIdV60';
 const K_SHORTCUT_TOKEN='newlineShortcutTokenV60'; // legacy v60 key; removed after successful migration
 const K_SHORTCUT_SET='newlineShortcutLinkSetV61';
+const K_VOLUME_JUMP='newlineRemoteVolumeJump';
+const K_BACKGROUND_PREFS='newlineRemoteBackgroundPrefs';
+const BACKGROUND_DB='NewlineRemoteAssets';
+const BACKGROUND_STORE='assets';
+const BACKGROUND_KEY='customBackground';
 
 const el=id=>document.getElementById(id);
 let creds={deviceId:'',token:'',deviceName:''};
@@ -482,13 +560,34 @@ function showLatency(sample){
     (avg?' · avg '+avg+' ms ('+latencySamples().length+')':'');
 }
 
-async function sendRemoteCommand(command,btn){
+async function sendLegacyVolumeFallback(command,remaining,requestId){
+  if(remaining<=0)return {boardMs:0};
+  const jobs=[];
+  for(let i=0;i<remaining;i++){
+    jobs.push(api('/api/phone-command',{
+      deviceId:creds.deviceId,
+      token:creds.token,
+      command,
+      count:1,
+      requestId:requestId+'-legacy-'+(i+1)
+    },10000));
+  }
+  const results=await Promise.all(jobs);
+  const failed=results.find(x=>!x||!x.ok);
+  if(failed)throw new Error((failed&&failed.message)||'One or more volume steps failed');
+  return {boardMs:results.reduce((sum,x)=>sum+Number(x.boardMs||0),0)};
+}
+
+async function sendRemoteCommand(command,btn,count=1){
   if(!validCreds(creds)){
     showPair();
     return;
   }
 
-  const label=COMMAND_LABELS[command]||'Command';
+  count=Math.max(1,Math.min(20,Number.parseInt(count,10)||1));
+  if(command!=='volUp'&&command!=='volDown')count=1;
+  const baseLabel=COMMAND_LABELS[command]||'Command';
+  const label=count>1?baseLabel+' ×'+count:baseLabel;
   const tapStarted=Date.now();
   const requestId=(crypto.randomUUID?crypto.randomUUID():
     Date.now().toString(36)+'-'+Math.random().toString(36).slice(2));
@@ -497,15 +596,15 @@ async function sendRemoteCommand(command,btn){
   if(btn)btn.classList.add('working');
 
   try{
-    // The laptop now stays in continuous held HTTPS long-poll mode, so this remains fast even after idle periods.
+    // v65 can send a volume count as one request. New v65 laptop services perform
+    // the repeat locally; older services safely fall back to queued one-step commands.
     const r=await api('/api/phone-command',{
       deviceId:creds.deviceId,
       token:creds.token,
       command,
+      count,
       requestId
     },10000);
-
-    const totalMs=Date.now()-tapStarted;
 
     if(!r||!r.ok){
       if(r&&r.unauthorized){
@@ -520,24 +619,261 @@ async function sendRemoteCommand(command,btn){
       return;
     }
 
+    let boardMs=Number(r.boardMs||0);
+    if(count>1){
+      const applied=Math.max(1,Math.min(count,Number.parseInt(r.countApplied||1,10)||1));
+      if(applied<count){
+        const fallback=await sendLegacyVolumeFallback(command,count-applied,requestId);
+        boardMs+=Number(fallback.boardMs||0);
+      }
+    }
+
+    const totalMs=Date.now()-tapStarted;
     const sample={
       totalMs,
-      realtimeMs:Number(r.realtimeMs||0),
-      boardMs:Number(r.boardMs||0),
+      realtimeMs:count>1?Math.max(0,totalMs-boardMs):Number(r.realtimeMs||0),
+      boardMs,
       at:Date.now()
     };
     rememberLatency(sample);
     showLatency(sample);
 
-    el('msg').textContent=(r.message||'Done')+' · '+totalMs+' ms';
+    el('msg').textContent=(count>1?label:(r.message||'Done'))+' · '+totalMs+' ms';
     flashButton(btn,'okflash');
     setStatus('Laptop online','on');
   }catch(e){
-    el('msg').textContent=(e&&e.name==='AbortError')?'Command timed out':'Could not reach relay';
+    el('msg').textContent=(e&&e.name==='AbortError')?'Command timed out':((e&&e.message)||'Could not reach relay');
     flashButton(btn,'errflash');
   }finally{
     if(btn)btn.classList.remove('working');
   }
+}
+
+function clampVolumeJump(value){
+  const n=Number.parseInt(value,10);
+  return Math.max(1,Math.min(20,Number.isFinite(n)?n:3));
+}
+
+let volumeJump=clampVolumeJump(localStorage.getItem(K_VOLUME_JUMP)||3);
+
+function renderVolumeJump(){
+  const down=el('quickVolumeDownBtn'),up=el('quickVolumeUpBtn'),label=el('quickVolumeLabel'),input=el('volumeJumpInput');
+  if(down)down.textContent='−'+volumeJump;
+  if(up)up.textContent='+'+volumeJump;
+  if(label)label.textContent='Quick ±'+volumeJump;
+  if(input)input.value=String(volumeJump);
+}
+
+function setVolumeJump(value){
+  volumeJump=clampVolumeJump(value);
+  try{localStorage.setItem(K_VOLUME_JUMP,String(volumeJump))}catch(e){}
+  renderVolumeJump();
+}
+
+function adjustVolumeJump(delta){
+  setVolumeJump(volumeJump+Number(delta||0));
+}
+
+function sendVolumeJump(command,btn){
+  return sendRemoteCommand(command,btn,volumeJump);
+}
+
+let currentBackgroundObjectUrl='';
+let backgroundPrefs={type:'none',url:'',dim:48};
+
+function readBackgroundPrefs(){
+  try{
+    const raw=localStorage.getItem(K_BACKGROUND_PREFS);
+    const p=raw?JSON.parse(raw):{};
+    return {
+      type:(p&&['file','url'].includes(p.type))?p.type:'none',
+      url:(p&&typeof p.url==='string')?p.url:'',
+      dim:Math.max(15,Math.min(80,Number(p&&p.dim)||48))
+    };
+  }catch(e){return {type:'none',url:'',dim:48}}
+}
+
+function persistBackgroundPrefs(){
+  try{localStorage.setItem(K_BACKGROUND_PREFS,JSON.stringify(backgroundPrefs))}catch(e){}
+}
+
+function setSettingsMessage(message,kind=''){
+  const node=el('settingsMessage');
+  if(!node)return;
+  node.textContent=message||'';
+  node.className='settingsMessage'+(kind?' '+kind:'');
+}
+
+function openBackgroundDb(){
+  return new Promise((resolve,reject)=>{
+    if(!('indexedDB' in window)){reject(new Error('Image storage is unavailable on this device.'));return}
+    const request=indexedDB.open(BACKGROUND_DB,1);
+    request.onupgradeneeded=()=>{
+      const db=request.result;
+      if(!db.objectStoreNames.contains(BACKGROUND_STORE))db.createObjectStore(BACKGROUND_STORE);
+    };
+    request.onsuccess=()=>resolve(request.result);
+    request.onerror=()=>reject(request.error||new Error('Could not open image storage.'));
+  });
+}
+
+async function backgroundDbPut(blob){
+  const db=await openBackgroundDb();
+  try{
+    await new Promise((resolve,reject)=>{
+      const tx=db.transaction(BACKGROUND_STORE,'readwrite');
+      tx.objectStore(BACKGROUND_STORE).put(blob,BACKGROUND_KEY);
+      tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);
+    });
+  }finally{db.close()}
+}
+
+async function backgroundDbGet(){
+  const db=await openBackgroundDb();
+  try{
+    return await new Promise((resolve,reject)=>{
+      const tx=db.transaction(BACKGROUND_STORE,'readonly');
+      const req=tx.objectStore(BACKGROUND_STORE).get(BACKGROUND_KEY);
+      req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error);
+    });
+  }finally{db.close()}
+}
+
+async function backgroundDbDelete(){
+  try{
+    const db=await openBackgroundDb();
+    try{
+      await new Promise((resolve,reject)=>{
+        const tx=db.transaction(BACKGROUND_STORE,'readwrite');
+        tx.objectStore(BACKGROUND_STORE).delete(BACKGROUND_KEY);
+        tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);
+      });
+    }finally{db.close()}
+  }catch(e){}
+}
+
+function applyBackgroundVisual(src,type='none'){
+  const layer=el('appBackground');
+  if(currentBackgroundObjectUrl&&currentBackgroundObjectUrl!==src){
+    try{URL.revokeObjectURL(currentBackgroundObjectUrl)}catch(e){}
+    currentBackgroundObjectUrl='';
+  }
+  if(src){
+    layer.style.backgroundImage='url("'+String(src).replace(/"/g,'%22')+'")';
+    document.body.classList.add('customBackground');
+    if(type==='file'&&String(src).startsWith('blob:'))currentBackgroundObjectUrl=src;
+  }else{
+    layer.style.backgroundImage='radial-gradient(circle at 50% -10%,#173c66 0,#07101d 42%,#050a11 100%)';
+    document.body.classList.remove('customBackground');
+  }
+  document.documentElement.style.setProperty('--background-dim',(backgroundPrefs.dim/100).toFixed(2));
+}
+
+function setBackgroundDim(value,save=true){
+  const n=Math.max(15,Math.min(80,Number(value)||48));
+  backgroundPrefs.dim=n;
+  document.documentElement.style.setProperty('--background-dim',(n/100).toFixed(2));
+  if(el('backgroundDimValue'))el('backgroundDimValue').textContent=Math.round(n)+'%';
+  if(el('backgroundDimRange'))el('backgroundDimRange').value=String(n);
+  if(save)persistBackgroundPrefs();
+}
+
+async function loadSavedBackground(){
+  backgroundPrefs=readBackgroundPrefs();
+  setBackgroundDim(backgroundPrefs.dim,false);
+  if(backgroundPrefs.type==='url'&&backgroundPrefs.url){
+    applyBackgroundVisual(backgroundPrefs.url,'url');
+    return;
+  }
+  if(backgroundPrefs.type==='file'){
+    try{
+      const blob=await backgroundDbGet();
+      if(blob){applyBackgroundVisual(URL.createObjectURL(blob),'file');return}
+    }catch(e){}
+  }
+  backgroundPrefs.type='none';
+  applyBackgroundVisual('','none');
+}
+
+function resizeBackgroundImage(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onerror=()=>reject(new Error('Could not read that image.'));
+    reader.onload=()=>{
+      const img=new Image();
+      img.onerror=()=>reject(new Error('That image could not be opened.'));
+      img.onload=()=>{
+        try{
+          const maxDim=1920;
+          const scale=Math.min(1,maxDim/img.naturalWidth,maxDim/img.naturalHeight);
+          const w=Math.max(1,Math.round(img.naturalWidth*scale));
+          const h=Math.max(1,Math.round(img.naturalHeight*scale));
+          const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+          const ctx=canvas.getContext('2d',{alpha:false});
+          ctx.fillStyle='#07101d';ctx.fillRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);
+          canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('Could not prepare that image.')),'image/jpeg',0.9);
+        }catch(e){reject(e)}
+      };
+      img.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function chooseBackgroundFile(file){
+  if(!file)return;
+  if(file.type&&!file.type.startsWith('image/')){setSettingsMessage('Please choose an image file.','bad');return}
+  setSettingsMessage('Preparing image…');
+  try{
+    const blob=await resizeBackgroundImage(file);
+    await backgroundDbPut(blob);
+    backgroundPrefs.type='file';backgroundPrefs.url='';persistBackgroundPrefs();
+    applyBackgroundVisual(URL.createObjectURL(blob),'file');
+    if(el('backgroundUrlInput'))el('backgroundUrlInput').value='';
+    setSettingsMessage('Background saved on this phone.','good');
+  }catch(e){setSettingsMessage((e&&e.message)||'Could not save background.','bad')}
+  finally{if(el('backgroundFileInput'))el('backgroundFileInput').value=''}
+}
+
+async function applyBackgroundUrl(){
+  const field=el('backgroundUrlInput');
+  const value=field?field.value.trim():'';
+  if(!value)return;
+  let parsed;
+  try{parsed=new URL(value)}catch(e){setSettingsMessage('Enter a valid HTTPS image URL.','bad');return}
+  if(parsed.protocol!=='https:'){setSettingsMessage('Background URLs must use HTTPS.','bad');return}
+  backgroundPrefs.type='url';backgroundPrefs.url=parsed.href;persistBackgroundPrefs();
+  await backgroundDbDelete();
+  applyBackgroundVisual(parsed.href,'url');
+  setSettingsMessage('Background URL saved.','good');
+}
+
+async function clearCustomBackground(){
+  backgroundPrefs.type='none';backgroundPrefs.url='';persistBackgroundPrefs();
+  await backgroundDbDelete();
+  applyBackgroundVisual('','none');
+  if(el('backgroundUrlInput'))el('backgroundUrlInput').value='';
+  setSettingsMessage('Background removed.','good');
+}
+
+function openSettings(){
+  renderVolumeJump();
+  backgroundPrefs=readBackgroundPrefs();
+  setBackgroundDim(backgroundPrefs.dim,false);
+  if(el('backgroundUrlInput'))el('backgroundUrlInput').value=backgroundPrefs.type==='url'?backgroundPrefs.url:'';
+  setSettingsMessage('');
+  el('settingsModal').classList.add('show');
+  el('settingsModal').setAttribute('aria-hidden','false');
+}
+
+function closeSettings(){
+  el('settingsModal').classList.remove('show');
+  el('settingsModal').setAttribute('aria-hidden','true');
+}
+
+function openShortcutSetupFromSettings(){
+  closeSettings();
+  openShortcutSetup();
 }
 
 
@@ -691,6 +1027,7 @@ function resetCopyButtons(){
 }
 
 async function openShortcutSetup(){
+  closeSettings();
   if(!validCreds(creds)){showPair();return}
   el('shortcutModal').classList.add('show');
   el('shortcutModal').setAttribute('aria-hidden','false');
@@ -757,7 +1094,7 @@ async function createShortcutLinks(){
     },10000);
     if(!r||!r.ok){
       const message=(r&&r.message)||'Could not create Shortcut links';
-      if(message.toLowerCase().includes('unknown api route'))throw new Error('Cloudflare relay v8 must be deployed first.');
+      if(message.toLowerCase().includes('unknown api route'))throw new Error('Cloudflare relay v9 must be deployed first.');
       throw new Error(message);
     }
     if(!r.setId||!r.urls||!SHORTCUT_COMMANDS.every(c=>typeof r.urls[c]==='string'))throw new Error('Relay returned incomplete Shortcut links.');
@@ -847,9 +1184,21 @@ async function revokeShortcutLinks(){
   }
 }
 
+el('settingsModal').addEventListener('click',e=>{
+  if(e.target===el('settingsModal'))closeSettings();
+});
+
+el('backgroundFileInput').addEventListener('change',e=>{
+  const file=e.target.files&&e.target.files[0];
+  if(file)chooseBackgroundFile(file);
+});
+
 el('shortcutModal').addEventListener('click',e=>{
   if(e.target===el('shortcutModal'))closeShortcutSetup();
 });
+
+renderVolumeJump();
+loadSavedBackground();
 
 if(!configured()){
   showConfigError();
