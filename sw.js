@@ -1,5 +1,5 @@
-const APP_VERSION=65;
-const CACHE='newline-remote-v65';
+const APP_VERSION=66;
+const CACHE='newline-remote-v66';
 const CORE=[
   './',
   './index.html',
@@ -74,12 +74,10 @@ self.addEventListener('fetch',event=>{
   const url=new URL(req.url);
   if(url.origin!==self.location.origin)return;
 
-  // This tiny file must always come from the network so the running app can
-  // reliably see that GitHub Pages has a newer build available.
-  if(url.pathname.endsWith('/version.json')){
-    event.respondWith(fetch(req,{cache:'no-store'}));
-    return;
-  }
+  // Never intercept version.json. Let the browser perform the normal network
+  // request itself. This avoids an iOS PWA failure mode where a version probe
+  // routed through the service worker can fail before the page sees a response.
+  if(url.pathname.endsWith('/version.json'))return;
 
   if(req.mode==='navigate'){
     event.respondWith(cachedShell(req));

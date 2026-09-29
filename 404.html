@@ -201,13 +201,13 @@ body.customBackground .card{background:#0b1727d5}
     </div>
   </div>
 
-  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span id="currentVersion" style="opacity:.7">Phone app v65</span>
+  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span id="currentVersion" style="opacity:.7">Phone app v66</span>
     <div class="updateTools"><button id="checkUpdateBtn" class="updateCheckBtn" onclick="manualCheckForUpdates()">Check for updates</button><div id="updateStatus" class="updateStatus"></div></div>
   </div>
 </div>
 
 <script>
-const APP_VERSION=65;
+const APP_VERSION=66;
 let swRegistration=null;
 let updateCheckBusy=false;
 let requestedUpdateReload=false;
@@ -236,10 +236,34 @@ function showUpdateAvailable(version){
 }
 
 async function fetchLatestAppVersion(){
-  const response=await fetch('./version.json?check='+Date.now(),{cache:'no-store'});
-  if(!response.ok)throw new Error('Version check failed');
-  const data=await response.json();
-  return versionNumber(data&&data.version);
+  // Fetch the tiny version marker directly from the network. The service worker
+  // deliberately does not intercept this request (v66+) so iOS cannot trap the
+  // update check inside a stale app-shell cache.
+  const url=new URL('./version.json',window.location.href);
+  url.searchParams.set('check',Date.now());
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),7000);
+  try{
+    let response;
+    try{
+      response=await fetch(url.href,{cache:'no-store',signal:controller.signal,headers:{'Accept':'application/json'}});
+    }catch(err){
+      if(!navigator.onLine)throw new Error('No internet connection');
+      if(err&&err.name==='AbortError')throw new Error('Update check timed out — try again');
+      throw new Error('Could not reach the update server');
+    }
+    if(!response.ok){
+      if(response.status===404)throw new Error('Update file is still publishing — try again shortly');
+      throw new Error('Update server returned '+response.status);
+    }
+    let data;
+    try{data=await response.json()}catch(err){throw new Error('Update server returned an invalid response')}
+    const latest=versionNumber(data&&data.version);
+    if(latest<1)throw new Error('Update server returned an invalid version');
+    return latest;
+  }finally{
+    clearTimeout(timeout);
+  }
 }
 
 async function checkForAppUpdate(showResult=false){
@@ -263,7 +287,7 @@ async function checkForAppUpdate(showResult=false){
       },2500);
     }
   }catch(e){
-    if(showResult)setUpdateStatus('Could not check right now','bad');
+    if(showResult)setUpdateStatus((e&&e.message)||'Could not check for updates','bad');
   }finally{
     updateCheckBusy=false;
     if(btn){btn.disabled=false;btn.textContent='Check for updates'}
@@ -298,7 +322,7 @@ async function updateAppNow(){
     const waiting=swRegistration.waiting;
     if(waiting)waiting.postMessage({type:'SKIP_WAITING'});
 
-    // New workers normally activate immediately in v65+, but give iOS a moment
+    // New workers normally activate immediately in v66+, but give iOS a moment
     // to switch controllers before navigating to the freshly cached shell.
     await new Promise(resolve=>setTimeout(resolve,500));
     location.replace('./?updated='+Date.now());
