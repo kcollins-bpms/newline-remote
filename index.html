@@ -21,6 +21,8 @@
 .modal{display:none;position:fixed;inset:0;z-index:50;background:#020711cc;backdrop-filter:blur(9px);padding:max(18px,env(safe-area-inset-top)) 14px max(18px,env(safe-area-inset-bottom));overflow:auto}.modal.show{display:block}.modalCard{max-width:560px;margin:18px auto;background:#0b1727;border:1px solid #2c527d;border-radius:24px;padding:20px;box-shadow:0 24px 70px #000b}.modalTop{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.modalTitle{font-size:23px;font-weight:850;letter-spacing:-.025em}.closeBtn{width:36px;height:36px;border-radius:12px;border:1px solid #365f8d;background:#13263a;color:#dce8f4;font-size:20px}.section{margin-top:18px;padding-top:16px;border-top:1px solid #274565}.section:first-of-type{border-top:0;padding-top:0}.sectionTitle{font-size:13px;font-weight:800;color:#dce8f4;margin-bottom:8px}.setupText{font-size:12px;line-height:1.55;color:var(--muted)}.primarySmall,.secondarySmall,.dangerSmall{width:100%;margin-top:10px;padding:12px;border-radius:12px;font-size:13px;font-weight:800}.primarySmall{border:1px solid #5ea9ff;background:#1f69bb;color:#fff}.secondarySmall{border:1px solid #365f8d;background:#13263a;color:#e8f1fa}.dangerSmall{border:1px solid #864052;background:#341723;color:#ffd7dc}.copyGrid{display:grid;gap:9px;margin-top:10px}.copyRow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}.copyValue{min-width:0;border:1px solid #274d77;background:#071423;border-radius:11px;padding:10px 11px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:#dce8f4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.copyBtn{border:1px solid #4779aa;background:#143253;color:#eaf4ff;border-radius:10px;padding:9px 10px;font-size:11px;font-weight:800}.commandTable{display:grid;grid-template-columns:1fr 1fr;gap:7px 12px;margin-top:10px}.commandItem{padding:8px 9px;border:1px solid #244768;border-radius:10px;background:#081726;font-size:11px;color:#cbd9e7}.commandItem code{color:#7ec0ff}.shortcutMsg{min-height:18px;margin-top:9px;text-align:center;font-size:11px;color:#8fa8c2}.shortcutMsg.bad{color:#ff8c99}.shortcutMsg.good{color:#67e6ad}.stepList{margin:8px 0 0;padding-left:19px;color:#b8cadd;font-size:12px;line-height:1.55}.stepList li{margin:7px 0}.monoInline{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#8fc9ff}.securityNote{margin-top:11px;padding:10px 11px;border-radius:11px;background:#0c2137;border:1px solid #2e557e;font-size:11px;line-height:1.5;color:#9fb3ca}
 
 .shortcutRows{display:grid;gap:9px;margin-top:10px}.shortcutRow{display:grid;grid-template-columns:1fr auto auto;gap:7px;align-items:center;padding:9px 10px;border:1px solid #244768;border-radius:11px;background:#081726}.shortcutName{font-size:12px;font-weight:800;color:#dce8f4}.copyBtn.copied{border-color:#4aa77d;background:#123c31;color:#aef4d0}.testBtn{border:1px solid #365f8d;background:#102942;color:#dce8f4;border-radius:10px;padding:9px 10px;font-size:11px;font-weight:800}.testBtn.testing{opacity:.65}.shortcutHint{font-size:11px;line-height:1.5;color:#8fa8c2;margin-top:9px}.shortcutDivider{height:1px;background:#274565;margin:14px 0}.shortcutReady{display:inline-flex;align-items:center;gap:7px;font-size:11px;color:#67e6ad;margin-top:8px}.shortcutReady:before{content:"";width:7px;height:7px;border-radius:50%;background:#67e6ad;box-shadow:0 0 10px #67e6ad88}
+
+.updateCard{display:none;margin:0 0 14px;padding:14px 15px;border-radius:16px;border:1px solid #3f79ad;background:linear-gradient(180deg,#12365a,#0b253f);box-shadow:0 12px 30px #0005}.updateCard.show{display:flex;align-items:center;justify-content:space-between;gap:12px}.updateCopy{min-width:0}.updateTitle{font-size:14px;font-weight:850;color:#f4f8ff}.updateText{font-size:11px;line-height:1.4;color:#a9bfd5;margin-top:3px}.updateNowBtn{flex:0 0 auto;border:1px solid #78bcff;background:#2374c7;color:#fff;border-radius:11px;padding:10px 12px;font-size:12px;font-weight:850}.updateNowBtn:disabled{opacity:.65}.updateTools{margin-top:11px;text-align:center}.updateCheckBtn{border:0;background:transparent;color:#7593b2;font-size:11px;padding:7px 10px}.updateCheckBtn:active{color:#a9c8e8}.updateCheckBtn:disabled{opacity:.6}.updateStatus{min-height:14px;font-size:10px;color:#7189a2;text-align:center}.updateStatus.good{color:#67dba8}.updateStatus.bad{color:#ff8996}
 </style>
 </head>
 <body>
@@ -28,6 +30,14 @@
   <div class="top">
     <div><div class="title">Newline Remote</div><div id="deviceName" class="sub">Phone remote</div></div>
     <div class="status"><span id="statusText">Not paired</span><span id="dot" class="dot"></span></div>
+  </div>
+
+  <div id="updateCard" class="updateCard" role="status" aria-live="polite">
+    <div class="updateCopy">
+      <div class="updateTitle">Phone Remote update available</div>
+      <div id="updateText" class="updateText">A newer version is ready.</div>
+    </div>
+    <button id="updateNowBtn" class="updateNowBtn" onclick="updateAppNow()">Update Now</button>
   </div>
 
   <div id="configError" class="card pair">
@@ -118,13 +128,133 @@
     </div>
   </div>
 
-  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span style="opacity:.7">Phone app v62</span></div>
+  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span id="currentVersion" style="opacity:.7">Phone app v63</span>
+    <div class="updateTools"><button id="checkUpdateBtn" class="updateCheckBtn" onclick="manualCheckForUpdates()">Check for updates</button><div id="updateStatus" class="updateStatus"></div></div>
+  </div>
 </div>
 
 <script>
+const APP_VERSION=63;
+let swRegistration=null;
+let updateCheckBusy=false;
+let requestedUpdateReload=false;
+let latestKnownVersion=APP_VERSION;
+
+function versionNumber(value){
+  const n=Number.parseInt(String(value||'').replace(/[^0-9]/g,''),10);
+  return Number.isFinite(n)?n:0;
+}
+
+function setUpdateStatus(message,kind=''){
+  const node=document.getElementById('updateStatus');
+  if(!node)return;
+  node.textContent=message||'';
+  node.className='updateStatus'+(kind?' '+kind:'');
+}
+
+function showUpdateAvailable(version){
+  const v=versionNumber(version);
+  if(v<=APP_VERSION)return;
+  latestKnownVersion=Math.max(latestKnownVersion,v);
+  const card=document.getElementById('updateCard');
+  const text=document.getElementById('updateText');
+  if(text)text.textContent='Phone app v'+v+' is ready. Your pairing and Shortcut links will stay intact.';
+  if(card)card.classList.add('show');
+}
+
+async function fetchLatestAppVersion(){
+  const response=await fetch('./version.json?check='+Date.now(),{cache:'no-store'});
+  if(!response.ok)throw new Error('Version check failed');
+  const data=await response.json();
+  return versionNumber(data&&data.version);
+}
+
+async function checkForAppUpdate(showResult=false){
+  if(updateCheckBusy)return;
+  updateCheckBusy=true;
+  const btn=document.getElementById('checkUpdateBtn');
+  if(btn){btn.disabled=true;btn.textContent='Checking…'}
+  if(showResult)setUpdateStatus('Checking…');
+  try{
+    if(swRegistration)await swRegistration.update().catch(()=>{});
+    const latest=await fetchLatestAppVersion();
+    latestKnownVersion=Math.max(latestKnownVersion,latest);
+    if(latest>APP_VERSION){
+      showUpdateAvailable(latest);
+      setUpdateStatus('v'+latest+' available','good');
+    }else if(showResult){
+      setUpdateStatus('You’re up to date · v'+APP_VERSION,'good');
+      setTimeout(()=>{
+        const node=document.getElementById('updateStatus');
+        if(node&&node.textContent.includes('up to date'))setUpdateStatus('');
+      },2500);
+    }
+  }catch(e){
+    if(showResult)setUpdateStatus('Could not check right now','bad');
+  }finally{
+    updateCheckBusy=false;
+    if(btn){btn.disabled=false;btn.textContent='Check for updates'}
+  }
+}
+
+function manualCheckForUpdates(){
+  checkForAppUpdate(true);
+}
+
+function waitForWorkerInstall(worker,timeoutMs=7000){
+  return new Promise(resolve=>{
+    if(!worker||['installed','activated'].includes(worker.state)){resolve(worker);return}
+    let done=false;
+    const finish=()=>{if(done)return;done=true;clearTimeout(timer);worker.removeEventListener('statechange',onState);resolve(worker)};
+    const onState=()=>{if(['installed','activated','redundant'].includes(worker.state))finish()};
+    const timer=setTimeout(finish,timeoutMs);
+    worker.addEventListener('statechange',onState);
+  });
+}
+
+async function updateAppNow(){
+  const btn=document.getElementById('updateNowBtn');
+  if(btn){btn.disabled=true;btn.textContent='Updating…'}
+  setUpdateStatus('Installing update…');
+  requestedUpdateReload=true;
+  try{
+    if(!('serviceWorker' in navigator))throw new Error('Updates are not supported here.');
+    swRegistration=swRegistration||await navigator.serviceWorker.getRegistration()||await navigator.serviceWorker.register('./sw.js');
+    await swRegistration.update();
+    if(swRegistration.installing)await waitForWorkerInstall(swRegistration.installing);
+    const waiting=swRegistration.waiting;
+    if(waiting)waiting.postMessage({type:'SKIP_WAITING'});
+
+    // New workers normally activate immediately in v63+, but give iOS a moment
+    // to switch controllers before navigating to the freshly cached shell.
+    await new Promise(resolve=>setTimeout(resolve,500));
+    location.replace('./?updated='+Date.now());
+  }catch(e){
+    requestedUpdateReload=false;
+    setUpdateStatus((e&&e.message)||'Update failed — try again','bad');
+    if(btn){btn.disabled=false;btn.textContent='Update Now'}
+  }
+}
+
 if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(requestedUpdateReload)location.replace('./?updated='+Date.now());
+  });
+  window.addEventListener('load',async()=>{
+    try{
+      swRegistration=await navigator.serviceWorker.register('./sw.js');
+      swRegistration.addEventListener('updatefound',()=>{
+        const worker=swRegistration.installing;
+        if(!worker)return;
+        worker.addEventListener('statechange',()=>{
+          if(worker.state==='installed'&&navigator.serviceWorker.controller){
+            checkForAppUpdate(false);
+          }
+        });
+      });
+    }catch(e){}
+    // Let the main UI appear first; then quietly check the tiny version file.
+    setTimeout(()=>checkForAppUpdate(false),700);
   });
 }
 
@@ -739,8 +869,9 @@ if(!configured()){
 }
 
 document.addEventListener('visibilitychange',()=>{
-  if(document.visibilityState==='visible'&&validCreds(creds)){
-    startStatusLoop();
+  if(document.visibilityState==='visible'){
+    if(validCreds(creds))startStatusLoop();
+    checkForAppUpdate(false);
   }else if(document.visibilityState==='hidden'){
     clearInterval(statusTimer);
   }
