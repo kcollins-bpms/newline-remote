@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -205,13 +205,13 @@ body.customBackground .quickVolBtn:active,body.customBackground .settingsBtn:act
     </div>
   </div>
 
-  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span id="currentVersion" style="opacity:.7">Phone app v67</span>
+  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span id="currentVersion" style="opacity:.7">Phone app v69</span>
     <div class="updateTools"><button id="checkUpdateBtn" class="updateCheckBtn" onclick="manualCheckForUpdates()">Check for updates</button><div id="updateStatus" class="updateStatus"></div></div>
   </div>
 </div>
 
 <script>
-const APP_VERSION=67;
+const APP_VERSION=68;
 let swRegistration=null;
 let updateCheckBusy=false;
 let requestedUpdateReload=false;
@@ -240,34 +240,34 @@ function showUpdateAvailable(version){
 }
 
 async function fetchLatestAppVersion(){
-  // Fetch the tiny version marker directly from the network. The service worker
-  // deliberately does not intercept this request (v67+) so iOS cannot trap the
-  // update check inside a stale app-shell cache.
-  const url=new URL('./version.json',window.location.href);
-  url.searchParams.set('check',Date.now());
-  const controller=new AbortController();
-  const timeout=setTimeout(()=>controller.abort(),7000);
-  try{
-    let response;
+  // Prefer Cloudflare for the tiny version probe because it is already the
+  // network path proven reliable for classroom commands. If that probe fails,
+  // fall back to the GitHub Pages version marker directly.
+  if(!navigator.onLine)throw new Error('No internet connection');
+  const attempts=[
+    {url:RELAY_BASE+'/api/phone-version?check='+Date.now(),name:'relay'},
+    {url:(()=>{const u=new URL('./version.json',window.location.href);u.searchParams.set('check',Date.now());return u.href})(),name:'pages'}
+  ];
+  let lastError=null;
+  for(const attempt of attempts){
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),7000);
     try{
-      response=await fetch(url.href,{cache:'no-store',signal:controller.signal,headers:{'Accept':'application/json'}});
+      const response=await fetch(attempt.url,{cache:'no-store',signal:controller.signal,headers:{'Accept':'application/json'}});
+      if(!response.ok)throw new Error(attempt.name+' returned '+response.status);
+      const data=await response.json();
+      if(data&&data.ok===false)throw new Error(data.message||'Version check failed');
+      const latest=versionNumber(data&&data.version);
+      if(latest<1)throw new Error('Invalid version response');
+      return latest;
     }catch(err){
-      if(!navigator.onLine)throw new Error('No internet connection');
-      if(err&&err.name==='AbortError')throw new Error('Update check timed out — try again');
-      throw new Error('Could not reach the update server');
+      lastError=err;
+    }finally{
+      clearTimeout(timeout);
     }
-    if(!response.ok){
-      if(response.status===404)throw new Error('Update file is still publishing — try again shortly');
-      throw new Error('Update server returned '+response.status);
-    }
-    let data;
-    try{data=await response.json()}catch(err){throw new Error('Update server returned an invalid response')}
-    const latest=versionNumber(data&&data.version);
-    if(latest<1)throw new Error('Update server returned an invalid version');
-    return latest;
-  }finally{
-    clearTimeout(timeout);
   }
+  if(lastError&&lastError.name==='AbortError')throw new Error('Update check timed out — try again');
+  throw new Error('Could not reach either update source');
 }
 
 async function checkForAppUpdate(showResult=false){
