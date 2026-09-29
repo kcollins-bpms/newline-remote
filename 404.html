@@ -15,7 +15,7 @@
 :root{color-scheme:dark;--bg:#07101d;--card:#0c1a2c;--line:#2c527d;--blue:#62adff;--text:#f4f8ff;--muted:#9fb3ca;--red:#ff7181;--green:#55dca3}
 *{box-sizing:border-box}html,body{min-height:100%}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -10%,#173c66 0,#07101d 42%,#050a11 100%);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);padding:max(20px,env(safe-area-inset-top)) 18px max(24px,env(safe-area-inset-bottom));-webkit-tap-highlight-color:transparent}
 .wrap{max-width:520px;margin:auto}.top{display:flex;align-items:center;justify-content:space-between;margin:3px 2px 20px}.title{font-size:28px;font-weight:850;letter-spacing:-.035em}.sub{font-size:12px;color:var(--muted);margin-top:3px}.status{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted)}.dot{width:11px;height:11px;border-radius:50%;background:#657386}.dot.on{background:var(--green);box-shadow:0 0 15px #55dca388}.dot.bad{background:var(--red)}
-.card{background:#0b1727e8;border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 18px 55px #0008;backdrop-filter:blur(14px)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.btn{min-height:116px;border-radius:20px;border:1px solid #365f8d;background:linear-gradient(180deg,#122b49,#0b1c30);color:#f7fbff;font-size:22px;font-weight:850;box-shadow:inset 0 1px #ffffff12,0 12px 30px #0005;touch-action:manipulation}.btn:active{transform:scale(.975);background:#17375b}.btn.working{transform:scale(.975);box-shadow:inset 0 0 0 2px #62adff,0 0 0 3px #62adff33,0 12px 30px #0005}.btn.okflash{box-shadow:inset 0 0 0 2px #55dca3,0 0 0 3px #55dca333,0 12px 30px #0005}.btn.errflash{box-shadow:inset 0 0 0 2px #ff7181,0 0 0 3px #ff718133,0 12px 30px #0005}.btn.wide{grid-column:1/-1;min-height:92px}.freeze{font-size:20px}.volume{margin-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.volume .btn{min-height:78px;font-size:30px}.volume .mute{font-size:16px}.msg{margin-top:13px;min-height:20px;text-align:center;color:var(--muted);font-size:12px}.latency{margin-top:2px;min-height:30px;text-align:center;color:#7891aa;font-size:10.5px;line-height:1.45}.pair{display:none}.pair.show{display:block}.remote.hide{display:none}label{display:block;font-size:12px;color:var(--muted);margin:12px 2px 7px}input{width:100%;font:inherit;font-size:18px;padding:14px;border-radius:13px;border:1px solid #365f8d;background:#071423;color:#fff;outline:none}.pairBtn{width:100%;margin-top:13px;padding:14px;border-radius:13px;border:1px solid #5ea9ff;background:#1f69bb;color:white;font-size:17px;font-weight:800}.help{font-size:12px;line-height:1.5;color:var(--muted);margin-top:14px}.small{font-size:11px;color:#7f96af;text-align:center;margin-top:18px}.warn{color:#ffd59c}
+.card{background:#0b1727e8;border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 18px 55px #0008;backdrop-filter:blur(14px)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.btn{min-height:116px;border-radius:20px;border:1px solid #365f8d;background:linear-gradient(180deg,#122b49,#0b1c30);color:#f7fbff;font-size:22px;font-weight:850;box-shadow:inset 0 1px #ffffff12,0 12px 30px #0005;touch-action:manipulation}.btn:active{transform:scale(.975);background:#17375b}.btn.working{transform:scale(.975);box-shadow:inset 0 0 0 2px #62adff,0 0 0 3px #62adff33,0 12px 30px #0005}.btn.okflash{box-shadow:inset 0 0 0 2px #55dca3,0 0 0 3px #55dca333,0 12px 30px #0005}.btn.errflash{box-shadow:inset 0 0 0 2px #ff7181,0 0 0 3px #ff718133,0 12px 30px #0005}.btn.wide{grid-column:1/-1;min-height:92px}.freeze{font-size:20px}.volume{margin-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.volume .btn{min-height:78px;font-size:30px;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}.volume #volumeDownBtn,.volume #volumeUpBtn{touch-action:none}.volume .mute{font-size:16px}.msg{margin-top:13px;min-height:20px;text-align:center;color:var(--muted);font-size:12px}.latency{margin-top:2px;min-height:30px;text-align:center;color:#7891aa;font-size:10.5px;line-height:1.45}.pair{display:none}.pair.show{display:block}.remote.hide{display:none}label{display:block;font-size:12px;color:var(--muted);margin:12px 2px 7px}input{width:100%;font:inherit;font-size:18px;padding:14px;border-radius:13px;border:1px solid #365f8d;background:#071423;color:#fff;outline:none}.pairBtn{width:100%;margin-top:13px;padding:14px;border-radius:13px;border:1px solid #5ea9ff;background:#1f69bb;color:white;font-size:17px;font-weight:800}.help{font-size:12px;line-height:1.5;color:var(--muted);margin-top:14px}.small{font-size:11px;color:#7f96af;text-align:center;margin-top:18px}.warn{color:#ffd59c}
 
 .utilityBtn{width:100%;margin-top:14px;padding:12px 14px;border-radius:14px;border:1px solid #365f8d;background:#0d2138;color:#dcecff;font-size:14px;font-weight:750}.utilityBtn:active{transform:scale(.985)}
 .modal{display:none;position:fixed;inset:0;z-index:50;background:#020711cc;backdrop-filter:blur(9px);padding:max(18px,env(safe-area-inset-top)) 14px max(18px,env(safe-area-inset-bottom));overflow:auto}.modal.show{display:block}.modalCard{max-width:560px;margin:18px auto;background:#0b1727;border:1px solid #2c527d;border-radius:24px;padding:20px;box-shadow:0 24px 70px #000b}.modalTop{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.modalTitle{font-size:23px;font-weight:850;letter-spacing:-.025em}.closeBtn{width:36px;height:36px;border-radius:12px;border:1px solid #365f8d;background:#13263a;color:#dce8f4;font-size:20px}.section{margin-top:18px;padding-top:16px;border-top:1px solid #274565}.section:first-of-type{border-top:0;padding-top:0}.sectionTitle{font-size:13px;font-weight:800;color:#dce8f4;margin-bottom:8px}.setupText{font-size:12px;line-height:1.55;color:var(--muted)}.primarySmall,.secondarySmall,.dangerSmall{width:100%;margin-top:10px;padding:12px;border-radius:12px;font-size:13px;font-weight:800}.primarySmall{border:1px solid #5ea9ff;background:#1f69bb;color:#fff}.secondarySmall{border:1px solid #365f8d;background:#13263a;color:#e8f1fa}.dangerSmall{border:1px solid #864052;background:#341723;color:#ffd7dc}.copyGrid{display:grid;gap:9px;margin-top:10px}.copyRow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}.copyValue{min-width:0;border:1px solid #274d77;background:#071423;border-radius:11px;padding:10px 11px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:#dce8f4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.copyBtn{border:1px solid #4779aa;background:#143253;color:#eaf4ff;border-radius:10px;padding:9px 10px;font-size:11px;font-weight:800}.commandTable{display:grid;grid-template-columns:1fr 1fr;gap:7px 12px;margin-top:10px}.commandItem{padding:8px 9px;border:1px solid #244768;border-radius:10px;background:#081726;font-size:11px;color:#cbd9e7}.commandItem code{color:#7ec0ff}.shortcutMsg{min-height:18px;margin-top:9px;text-align:center;font-size:11px;color:#8fa8c2}.shortcutMsg.bad{color:#ff8c99}.shortcutMsg.good{color:#67e6ad}.stepList{margin:8px 0 0;padding-left:19px;color:#b8cadd;font-size:12px;line-height:1.55}.stepList li{margin:7px 0}.monoInline{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#8fc9ff}.securityNote{margin-top:11px;padding:10px 11px;border-radius:11px;background:#0c2137;border:1px solid #2e557e;font-size:11px;line-height:1.5;color:#9fb3ca}
@@ -60,9 +60,9 @@
       <button class="btn wide freeze" onclick="sendRemoteCommand('freeze',this)">❄ &nbsp; Freeze</button>
     </div>
     <div class="volume">
-      <button class="btn" aria-label="Volume down" onclick="sendRemoteCommand('volDown',this)">−</button>
+      <button id="volumeDownBtn" class="btn" aria-label="Volume down. Tap once or hold to repeat.">−</button>
       <button class="btn mute" onclick="sendRemoteCommand('mute',this)">Mute</button>
-      <button class="btn" aria-label="Volume up" onclick="sendRemoteCommand('volUp',this)">+</button>
+      <button id="volumeUpBtn" class="btn" aria-label="Volume up. Tap once or hold to repeat.">+</button>
     </div>
     <div id="msg" class="msg">Ready</div>
     <div id="latency" class="latency">Realtime latency will appear after a command.</div>
@@ -118,7 +118,7 @@
     </div>
   </div>
 
-  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span style="opacity:.7">Phone app v61</span></div>
+  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span style="opacity:.7">Phone app v62</span></div>
 </div>
 
 <script>
@@ -409,6 +409,109 @@ async function sendRemoteCommand(command,btn){
     if(btn)btn.classList.remove('working');
   }
 }
+
+
+const VOLUME_HOLD_DELAY_MS=360;
+const VOLUME_REPEAT_GAP_MS=35;
+const volumeHold={
+  active:false,
+  command:'',
+  btn:null,
+  pointerId:null,
+  repeatReady:false,
+  inFlight:false,
+  delayTimer:null,
+  gapTimer:null
+};
+
+function clearVolumeHoldTimers(){
+  if(volumeHold.delayTimer){clearTimeout(volumeHold.delayTimer);volumeHold.delayTimer=null}
+  if(volumeHold.gapTimer){clearTimeout(volumeHold.gapTimer);volumeHold.gapTimer=null}
+}
+
+function stopVolumeHold(event){
+  if(!volumeHold.active)return;
+  if(event&&event.pointerId!==undefined&&volumeHold.pointerId!==null&&event.pointerId!==volumeHold.pointerId)return;
+
+  const btn=volumeHold.btn;
+  const pointerId=volumeHold.pointerId;
+  volumeHold.active=false;
+  volumeHold.repeatReady=false;
+  volumeHold.command='';
+  volumeHold.btn=null;
+  volumeHold.pointerId=null;
+  clearVolumeHoldTimers();
+
+  if(btn&&pointerId!==null&&btn.releasePointerCapture){
+    try{if(btn.hasPointerCapture(pointerId))btn.releasePointerCapture(pointerId)}catch(e){}
+  }
+}
+
+async function fireHeldVolumeCommand(){
+  if(!volumeHold.active||volumeHold.inFlight||!volumeHold.command||!volumeHold.btn)return;
+
+  const command=volumeHold.command;
+  const btn=volumeHold.btn;
+  volumeHold.inFlight=true;
+  try{
+    await sendRemoteCommand(command,btn);
+  }finally{
+    volumeHold.inFlight=false;
+    if(volumeHold.active&&volumeHold.repeatReady&&volumeHold.command===command&&volumeHold.btn===btn){
+      volumeHold.gapTimer=setTimeout(()=>{
+        volumeHold.gapTimer=null;
+        fireHeldVolumeCommand();
+      },VOLUME_REPEAT_GAP_MS);
+    }
+  }
+}
+
+function startVolumeHold(command,btn,event){
+  if(event&&event.pointerType==='mouse'&&event.button!==0)return;
+  if(event)event.preventDefault();
+  if(volumeHold.active)stopVolumeHold();
+
+  clearVolumeHoldTimers();
+  volumeHold.active=true;
+  volumeHold.command=command;
+  volumeHold.btn=btn;
+  volumeHold.pointerId=event&&event.pointerId!==undefined?event.pointerId:null;
+  volumeHold.repeatReady=false;
+
+  if(btn&&volumeHold.pointerId!==null&&btn.setPointerCapture){
+    try{btn.setPointerCapture(volumeHold.pointerId)}catch(e){}
+  }
+
+  // A quick tap is still exactly one step. Holding switches to repeat mode.
+  fireHeldVolumeCommand();
+  volumeHold.delayTimer=setTimeout(()=>{
+    volumeHold.delayTimer=null;
+    if(!volumeHold.active||volumeHold.command!==command||volumeHold.btn!==btn)return;
+    volumeHold.repeatReady=true;
+    fireHeldVolumeCommand();
+  },VOLUME_HOLD_DELAY_MS);
+}
+
+function bindVolumeHoldButton(id,command){
+  const btn=el(id);
+  if(!btn)return;
+  btn.addEventListener('pointerdown',e=>startVolumeHold(command,btn,e));
+  btn.addEventListener('pointerup',stopVolumeHold);
+  btn.addEventListener('pointercancel',stopVolumeHold);
+  btn.addEventListener('lostpointercapture',e=>{
+    if(volumeHold.active&&volumeHold.btn===btn)stopVolumeHold(e);
+  });
+  btn.addEventListener('contextmenu',e=>e.preventDefault());
+  btn.addEventListener('keydown',e=>{
+    if((e.key==='Enter'||e.key===' ')&&!e.repeat){
+      e.preventDefault();
+      sendRemoteCommand(command,btn);
+    }
+  });
+}
+
+bindVolumeHoldButton('volumeDownBtn','volDown');
+bindVolumeHoldButton('volumeUpBtn','volUp');
 
 
 let shortcutSet={setId:'',urls:{}};
