@@ -1,5 +1,4 @@
-﻿const APP_VERSION=68;
-const CACHE='newline-remote-v69';
+const CACHE='newline-remote-v70';
 const CORE=[
   './',
   './index.html',

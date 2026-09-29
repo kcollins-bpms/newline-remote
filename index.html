@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -205,17 +205,19 @@ body.customBackground .quickVolBtn:active,body.customBackground .settingsBtn:act
     </div>
   </div>
 
-  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span id="currentVersion" style="opacity:.7">Phone app v69</span>
+  <div id="installHint" class="small">Pairing is stored inside the installed Home Screen app.<br><span id="currentVersion" style="opacity:.7"></span>
     <div class="updateTools"><button id="checkUpdateBtn" class="updateCheckBtn" onclick="manualCheckForUpdates()">Check for updates</button><div id="updateStatus" class="updateStatus"></div></div>
   </div>
 </div>
 
 <script>
-const APP_VERSION=68;
+const APP_VERSION=70;
 let swRegistration=null;
 let updateCheckBusy=false;
 let requestedUpdateReload=false;
 let latestKnownVersion=APP_VERSION;
+const currentVersionNode=document.getElementById('currentVersion');
+if(currentVersionNode)currentVersionNode.textContent='Phone app v'+APP_VERSION;
 
 function versionNumber(value){
   const n=Number.parseInt(String(value||'').replace(/[^0-9]/g,''),10);
@@ -283,9 +285,11 @@ async function checkForAppUpdate(showResult=false){
     if(latest>APP_VERSION){
       showUpdateAvailable(latest);
       setUpdateStatus('v'+latest+' available','good');
-    }else if(showResult){
-      setUpdateStatus('You’re up to date · v'+APP_VERSION,'good');
-      setTimeout(()=>{
+    }else{
+      const card=document.getElementById('updateCard');
+      if(card)card.classList.remove('show');
+      if(showResult)setUpdateStatus('You’re up to date · v'+APP_VERSION,'good');
+      if(showResult)setTimeout(()=>{
         const node=document.getElementById('updateStatus');
         if(node&&node.textContent.includes('up to date'))setUpdateStatus('');
       },2500);
