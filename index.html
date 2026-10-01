@@ -211,7 +211,7 @@ body.customBackground .quickVolBtn:active,body.customBackground .settingsBtn:act
 </div>
 
 <script>
-const APP_VERSION=72;
+const APP_VERSION=73;
 let swRegistration=null;
 let updateCheckBusy=false;
 let requestedUpdateReload=false;
@@ -306,7 +306,7 @@ function manualCheckForUpdates(){
   checkForAppUpdate(true);
 }
 
-function waitForWorkerInstall(worker,timeoutMs=7000){
+function waitForWorkerInstall(worker,timeoutMs=12000){
   return new Promise(resolve=>{
     if(!worker||['installed','activated'].includes(worker.state)){resolve(worker);return}
     let done=false;
@@ -317,23 +317,72 @@ function waitForWorkerInstall(worker,timeoutMs=7000){
   });
 }
 
+function messageCurrentWorker(message,timeoutMs=3500){
+  return new Promise((resolve,reject)=>{
+    const controller=navigator.serviceWorker&&navigator.serviceWorker.controller;
+    if(!controller){reject(new Error('No active app cache controller'));return}
+    const channel=new MessageChannel();
+    let done=false;
+    const finish=(fn,value)=>{if(done)return;done=true;clearTimeout(timer);try{channel.port1.close()}catch(e){}fn(value)};
+    const timer=setTimeout(()=>finish(reject,new Error('Current app cache did not respond')),timeoutMs);
+    channel.port1.onmessage=event=>finish(resolve,event.data||{});
+    try{controller.postMessage(message,[channel.port2])}
+    catch(error){finish(reject,error)}
+  });
+}
+
+async function registerReleaseWorker(version){
+  const target=Math.max(APP_VERSION,versionNumber(version)||APP_VERSION);
+  const swUrl=new URL('./sw.js',window.location.href);
+  // A versioned SW script URL + updateViaCache:none prevents iOS from satisfying
+  // an explicit update with an older cached copy of sw.js.
+  swUrl.searchParams.set('release',String(target));
+  swRegistration=await navigator.serviceWorker.register(swUrl.href,{scope:'./',updateViaCache:'none'});
+  try{await swRegistration.update()}catch(e){}
+  if(swRegistration.installing)await waitForWorkerInstall(swRegistration.installing);
+  if(swRegistration.waiting)swRegistration.waiting.postMessage({type:'SKIP_WAITING'});
+  return swRegistration;
+}
+
 async function updateAppNow(){
   const btn=document.getElementById('updateNowBtn');
   if(btn){btn.disabled=true;btn.textContent='Updating…'}
-  setUpdateStatus('Installing update…');
+  setUpdateStatus('Preparing update…');
   requestedUpdateReload=true;
   try{
     if(!('serviceWorker' in navigator))throw new Error('Updates are not supported here.');
-    swRegistration=swRegistration||await navigator.serviceWorker.getRegistration()||await navigator.serviceWorker.register('./sw.js');
-    await swRegistration.update();
-    if(swRegistration.installing)await waitForWorkerInstall(swRegistration.installing);
-    const waiting=swRegistration.waiting;
-    if(waiting)waiting.postMessage({type:'SKIP_WAITING'});
 
-    // New workers normally activate immediately in v67+, but give iOS a moment
-    // to switch controllers before navigating to the freshly cached shell.
-    await new Promise(resolve=>setTimeout(resolve,500));
-    location.replace('./?updated='+Date.now());
+    // Refresh the target version first so we never install an already-superseded build.
+    try{
+      const latest=await fetchLatestAppVersion();
+      latestKnownVersion=Math.max(latestKnownVersion,latest);
+    }catch(e){}
+    const target=Math.max(latestKnownVersion,APP_VERSION+1);
+
+    // v73+ can ask the CURRENT controller to put the fresh target index directly
+    // into the cache it is serving. That breaks the iOS standalone-PWA loop where
+    // the new worker installs but the old controller keeps serving an old shell.
+    // Pre-v73 workers will simply time out here; the new worker's install handler
+    // also backfills old caches, so the v72 -> v73 transition is still recoverable.
+    try{
+      const staged=await messageCurrentWorker({type:'STAGE_UPDATE',targetVersion:target});
+      if(staged&&staged.ok===false)throw new Error(staged.message||'The new app files are still publishing.');
+      if(staged&&staged.ok)setUpdateStatus('New app ready · finishing…');
+    }catch(stageError){
+      // If a v73+ worker answered with a real publishing/network error, surface it.
+      // A timeout/no-response is expected only when upgrading from an older worker.
+      const text=(stageError&&stageError.message)||'';
+      if(text&&text!=='Current app cache did not respond'&&text!=='No active app cache controller')throw stageError;
+    }
+
+    await registerReleaseWorker(target);
+
+    // The new worker's install step also writes the verified fresh index into any
+    // older Newline cache before activation. Give iOS a beat to finish that write,
+    // then navigate. The next screen therefore cannot come from the stale shell.
+    setUpdateStatus('Reloading into v'+target+'…','good');
+    await new Promise(resolve=>setTimeout(resolve,700));
+    location.replace('./?updated='+target+'&t='+Date.now());
   }catch(e){
     requestedUpdateReload=false;
     setUpdateStatus((e&&e.message)||'Update failed — try again','bad');
@@ -343,11 +392,14 @@ async function updateAppNow(){
 
 if('serviceWorker' in navigator){
   navigator.serviceWorker.addEventListener('controllerchange',()=>{
-    if(requestedUpdateReload)location.replace('./?updated='+Date.now());
+    // Do not immediately force a second reload here. Update Now explicitly stages
+    // the new shell first and performs one controlled navigation of its own.
   });
   window.addEventListener('load',async()=>{
     try{
-      swRegistration=await navigator.serviceWorker.register('./sw.js');
+      const swUrl=new URL('./sw.js',window.location.href);
+      swUrl.searchParams.set('release',String(APP_VERSION));
+      swRegistration=await navigator.serviceWorker.register(swUrl.href,{scope:'./',updateViaCache:'none'});
       swRegistration.addEventListener('updatefound',()=>{
         const worker=swRegistration.installing;
         if(!worker)return;
