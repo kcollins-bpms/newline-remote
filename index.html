@@ -211,7 +211,7 @@ body.customBackground .quickVolBtn:active,body.customBackground .settingsBtn:act
 </div>
 
 <script>
-const APP_VERSION=73;
+const APP_VERSION=74;
 let swRegistration=null;
 let updateCheckBusy=false;
 let requestedUpdateReload=false;
@@ -592,7 +592,7 @@ async function refreshStatus(){
 function startStatusLoop(){
   clearInterval(statusTimer);
   refreshStatus();
-  statusTimer=setInterval(refreshStatus,10000);
+  statusTimer=setInterval(refreshStatus,60000);
 }
 
 const COMMAND_LABELS={

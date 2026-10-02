@@ -1,5 +1,5 @@
-const RELEASE=73;
-const CACHE='newline-remote-v73';
+const RELEASE=74;
+const CACHE='newline-remote-v74';
 const CORE=[
   './',
   './index.html',
